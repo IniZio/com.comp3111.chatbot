@@ -1,2 +1,2 @@
-# comp3511-chatbot
-Chatbot project for Comp 3511
+# comp3111-chatbot
+Chatbot project for Comp 3111
