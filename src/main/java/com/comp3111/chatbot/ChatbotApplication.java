@@ -1,4 +1,4 @@
-package com.comp3511.chatbot;
+package com.comp3111.chatbot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

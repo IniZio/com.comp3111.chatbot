@@ -1,0 +1,15 @@
+{
+    "name": "COMP3111 Chatbot",
+    "description": "Chatbot project for COMP3111 course",
+    "keywords": ["chatbot", "line", "java"],
+    "env": {
+        "LINE_BOT_CHANNEL_TOKEN": {
+            "description": "LINE bot Channel access token from the Channel Console",
+            "required":  true
+        },
+        "LINE_BOT_CHANNEL_SECRET": {
+            "description": "LINE bot Channel secret from the Channel Console",
+            "required":  true
+        }
+    }
+}
