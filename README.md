@@ -5,9 +5,10 @@ Chatbot project for Comp 3111
 
 ## Localhost setup
 1. Git clone
-2. Fire up the server: `./gradlew bootRun`
-3. Run [ngrok](https://ngrok.com/download) `ngrok http 8080`
-4. Copy and paste the ngrok https url to Line control panel (Line@ Manager -> Message API Settings -> LINE Developeres -> Edit -> Webhook URL)
+2. Build the project to generate JAR: `./gradlew build`
+3. Fire up both server and database with [docker-ce](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/): `docker-compose up -build`
+4. Run [ngrok](https://ngrok.com/download) `ngrok http 8080`
+5. Copy and paste the ngrok https url to Line control panel (Line@ Manager -> Message API Settings -> LINE Developeres -> Edit -> Webhook URL)
 
 ## Heroku setup
 1. Click [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/IniZio/com.comp3111.chatbot)
