@@ -65,7 +65,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @LineMessageHandler
-public class TestController {
+public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
 
