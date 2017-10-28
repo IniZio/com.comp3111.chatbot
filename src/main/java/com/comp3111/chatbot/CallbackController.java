@@ -63,6 +63,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
+import com.comp3111.chatbot.BusETARequestHandler;
+
 @Slf4j
 @LineMessageHandler
 public class CallbackController {
@@ -192,7 +194,7 @@ public class CallbackController {
             throw new IllegalArgumentException("replyToken must not be empty");
         }
         if (message.length() > 1000) {
-            message = message.substring(0, 1000 - 2) + "……";
+            message = message.substring(0, 1000 - 2) + "�色��";
         }
         this.reply(replyToken, new TextMessage(message));
     }
@@ -280,12 +282,12 @@ public class CallbackController {
                                 new URIAction("Go to line.me",
                                               "https://line.me"),
                                 new PostbackAction("Say hello1",
-                                                   "hello こんにちは"),
-                                new PostbackAction("言 hello2",
-                                                   "hello こんにちは",
-                                                   "hello こんにちは"),
+                                                   "hello �����"),
+                                new PostbackAction("閮� hello2",
+                                                   "hello �����",
+                                                   "hello �����"),
                                 new MessageAction("Say message",
-                                                  "Rice=米")
+                                                  "Rice=蝐�")
                         ));
                 TemplateMessage templateMessage = new TemplateMessage("Button alt text", buttonsTemplate);
                 this.reply(replyToken, templateMessage);
@@ -301,17 +303,17 @@ public class CallbackController {
                                         new URIAction("Go to line.me",
                                                 "https://line.me"),
                                         new PostbackAction("Say hello1",
-                                                           "hello こんにちは")
+                                                           "hello �����")
                                 )),
                                 new CarouselColumn(imageUrl, "hoge", "fuga", Arrays.asList(
-                                        new PostbackAction("言 hello2",
-                                                           "hello こんにちは",
-                                                           "hello こんにちは"),
-                                        new PostbackAction("言 hello2",
-                                                "hello こんにちは",
-                                                "hello こんにちは"),
+                                        new PostbackAction("閮� hello2",
+                                                           "hello �����",
+                                                           "hello �����"),
+                                        new PostbackAction("閮� hello2",
+                                                "hello �����",
+                                                "hello �����"),
                                         new MessageAction("Say message",
-                                                          "Rice=米")
+                                                          "Rice=蝐�")
                                 )),
                                 new CarouselColumn(imageUrl, "Datetime Picker", "Please select a date, time or datetime", Arrays.asList(
                                         new DatetimePickerAction("Datetime",
@@ -348,12 +350,12 @@ public class CallbackController {
                                 ),
                                 new ImageCarouselColumn(imageUrl,
                                         new MessageAction("Say message",
-                                                "Rice=米")
+                                                "Rice=蝐�")
                                 ),
                                 new ImageCarouselColumn(imageUrl,
-                                        new PostbackAction("言 hello2",
-                                                "hello こんにちは",
-                                                "hello こんにちは")
+                                        new PostbackAction("閮� hello2",
+                                                "hello �����",
+                                                "hello �����")
                                 )
                         ));
                 TemplateMessage templateMessage = new TemplateMessage("ImageCarousel alt text", imageCarouselTemplate);
@@ -393,6 +395,23 @@ public class CallbackController {
                         )
                 ));
                 break;
+            case "bus": {
+                String replyMessage = "no info";
+                BusETARequestHandler busETARequestHandler = new BusETARequestHandler();
+                StringBuilder results = new StringBuilder();
+                results.append("Time for 91M: ");
+                for (String element:busETARequestHandler.getArriveTime()){
+                    if (element.equals("error")){
+                        replyMessage = element;
+                        break;
+                    }
+                    results.append(element);
+                    results.append(" ");
+                    replyMessage = results.toString();
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
             default:
                 log.info("Returns echo message {}: {}", replyToken, text);
                 this.replyText(

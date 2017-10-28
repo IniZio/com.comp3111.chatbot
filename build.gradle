@@ -32,6 +32,7 @@ dependencies {
 	compile('com.linecorp.bot:line-bot-model:1.10.0')
 	compile('com.linecorp.bot:line-bot-api-client:1.10.0')
 	compile('com.linecorp.bot:line-bot-spring-boot:1.10.0')
+	compile group: 'org.json', name: 'json', version: '20171018'
 	runtime('org.springframework.boot:spring-boot-devtools')
 	// testCompile('org.springframework.boot:spring-boot-starter-test')
 }
