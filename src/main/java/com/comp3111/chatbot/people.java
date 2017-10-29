@@ -16,10 +16,10 @@ public class people{
 			 String department,  String room){
 		this.title=title;
 		this.name=name;
-		this.name=email;
-		this.name=phone;
-		this.name=department;
-		this.name=room;
+		this.email=email;
+		this.phone=phone;
+		this.department=department;
+		this.room=room;
 		
 	}
 	

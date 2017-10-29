@@ -222,10 +222,10 @@ public class CallbackController {
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         String text = content.getText();
-        text=text.toLowerCase();
         
         log.info("Got text message from {}: {}", replyToken, text);
-        if (number==1) {
+        
+        if (number==1) {			// for finding people
         		String replyPeople="Not found.";
         	
 	        URLConnectionReader search = new URLConnectionReader();
@@ -235,19 +235,27 @@ public class CallbackController {
 	        	StringBuilder results = new StringBuilder();
 	        if (result !=null) {
 	        		
-	        	for (int i = 0; i < resultList.size(); i++) {
-	        		results.append(resultList.get(i).getTitle());
+	        	for (people p : resultList){
+	        		//people p = resultList.get(i);
+	        		results.append("Search Result(s):\n");
+	        		results.append("Title:");
+	        		results.append(p.getTitle());
 	        		results.append("\n");
-	        		results.append(resultList.get(i).getName());
+	        		results.append("Name:");
+	        		results.append(p.getName());
 	        		results.append("\n");
-	        		results.append(resultList.get(i).getEmail());
+	        		results.append("Email:");
+	        		results.append(p.getEmail());
 	        		results.append("\n");
-	        		results.append(resultList.get(i).getPhone());
+	        		results.append("Phone:");
+	        		results.append(p.getPhone());
 	        		results.append("\n");
-	        		results.append(resultList.get(i).getDepartment());
+	        		results.append("Department:");
+	        		results.append(p.getDepartment());
 	        		results.append("\n");
-	        		results.append(resultList.get(i).getRoom());
-	        		results.append("\n");
+	        		results.append("Room:");
+	        		results.append(p.getRoom());
+	        		results.append("\n\n");
 	    		}
 	        		replyPeople = results.toString();
 	        }
@@ -256,6 +264,8 @@ public class CallbackController {
 	        number=0;
 	        return;
         }
+        
+        text=text.toLowerCase();
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();

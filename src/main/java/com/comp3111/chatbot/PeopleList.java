@@ -16,8 +16,9 @@ public class PeopleList {
 	
 	public void addPeople (String p0, String p1, String p2, String p3, String p4, String p5) {
 		people p = new people(p0, p1, p2, p3, p4, p5);
-		if (this.people==null)
-			this.people=new ArrayList<people>();
+		if (this.people==null) {
+			this.people=new ArrayList<people>();	
+		}		
 		this.people.add(p);
 	}
 	
