@@ -22,15 +22,17 @@ public class URLConnectionReader {
     	    Elements inputElements = content.getElementsByTag("td"); 
 
     	    String [] values = new String [100];
+    	    PeopleList l = new PeopleList();
+    	    
     	    int i=0;
     	    
     	    for(Element td : inputElements) {
     	        values[i] = td.text();  
+    	        if (values[i].endsWith("No result found matching your search criteria."))
+    	        		return l;
     	        //log.info("values {} = {}", i, values[i]);
     	        i++; 			
     		}
-    	    
-    	    PeopleList l = new PeopleList();
     	    
     	    int j =0;
     	    while(j<i) {
