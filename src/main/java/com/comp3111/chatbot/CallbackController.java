@@ -397,7 +397,7 @@ public class CallbackController {
                 break;
             case "bus": {
                 String replyMessage = "no info";
-                BusETARequestHandler busETARequestHandler = new BusETARequestHandler();
+                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
                 StringBuilder results = new StringBuilder();
                 results.append("Time for 91M: ");
                 for (String element:busETARequestHandler.getArriveTime()){

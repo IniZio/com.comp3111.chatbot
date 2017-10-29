@@ -4,8 +4,6 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.io.BufferedReader;
@@ -14,8 +12,23 @@ import java.util.List;
 
 
 public class BusETARequestHandler {
+    public BusETARequestHandler (String route, String bound){
+        this.route = route;
+        this.bound = bound;
+        if (route.equals("91M") && bound.equals("1")){
+            this.stop = "12";
+        }
+        else if (route.equals("91M") && bound.equals("2")){
+            this.stop = "16";
+        }
+        else
+            this.stop = "15";
+    }
+    private String route;
+    private String bound;
+    private  String stop;
     public List<String> getArriveTime() throws Exception {
-        URL url = new URL("http://etav3.kmb.hk/?action=geteta&lang=en&route=91M&bound=1&stop_seq=12");
+        URL url = new URL("http://etav3.kmb.hk/?action=geteta&lang=en&route=" + route + "&bound=" + bound + "&stop_seq=" + stop);
         BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
         StringBuilder sb = new StringBuilder();
         String line;
