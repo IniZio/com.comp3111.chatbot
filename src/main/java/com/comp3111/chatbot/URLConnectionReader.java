@@ -15,8 +15,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class URLConnectionReader {
     public PeopleList SearchPeople(String args) throws Exception {
-    		Document doc = Jsoup.connect("http://www.ust.hk/search/"+args+"/?sopt=people").get();
-    		//Document doc = Jsoup.connect("http://www.ust.hk/search/Ma%20Hoi%20Lam/?sopt=people").get();
+	    	String s1=args.replace(" ", "%20");
+    		Document doc = Jsoup.connect("http://www.ust.hk/search/"+s1+"/?sopt=people").get();
+    		//Document doc = Jsoup.connect("http://www.ust.hk/search/a%20b%20c/?sopt=people").get();
     		Element content = doc.getElementById("p-s-table");
     	    Elements inputElements = content.getElementsByTag("td"); 
 

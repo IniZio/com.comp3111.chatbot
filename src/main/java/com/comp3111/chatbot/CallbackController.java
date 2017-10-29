@@ -233,29 +233,29 @@ public class CallbackController {
 	        ArrayList<people> resultList = result.getList();
 	        	
 	        	StringBuilder results = new StringBuilder();
+	        	results.append("Search Result(s):\n");
+	        	
 	        if (result !=null) {
-	        		
 	        	for (people p : resultList){
-	        		//people p = resultList.get(i);
-	        		results.append("Search Result(s):\n");
-	        		results.append("Title:");
+	        		results.append("\n");
+	        		results.append("Title: ");
 	        		results.append(p.getTitle());
 	        		results.append("\n");
-	        		results.append("Name:");
+	        		results.append("Name: ");
 	        		results.append(p.getName());
 	        		results.append("\n");
-	        		results.append("Email:");
+	        		results.append("Email: ");
 	        		results.append(p.getEmail());
 	        		results.append("\n");
-	        		results.append("Phone:");
+	        		results.append("Phone: ");
 	        		results.append(p.getPhone());
 	        		results.append("\n");
-	        		results.append("Department:");
+	        		results.append("Department: ");
 	        		results.append(p.getDepartment());
 	        		results.append("\n");
-	        		results.append("Room:");
+	        		results.append("Room: ");
 	        		results.append(p.getRoom());
-	        		results.append("\n\n");
+	        		results.append("\n");
 	    		}
 	        		replyPeople = results.toString();
 	        }
