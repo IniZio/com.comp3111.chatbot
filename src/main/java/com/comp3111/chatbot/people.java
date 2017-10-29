@@ -24,22 +24,34 @@ public class people{
 	}
 	
 	public String getTitle() {
+		if (this.title==null)
+			return "No info";
 		return this.title;
 	}
 	
 	public String getName() {
+		if (this.name==null)
+			return "No info";
 		return this.name;
 	}
 	public String getEmail() {
+		if (this.email==null)
+			return "No info";
 		return this.email;
 	}
 	public String getPhone() {
+		if (this.phone==null)
+			return "No info";
 		return this.phone;
 	}
 	public String getDepartment() {
+		if (this.department==null)
+			return "No info";
 		return this.department;
 	}
 	public String getRoom() {
+		if (this.room==null)
+			return "No info";
 		return this.room;
 	}
 }

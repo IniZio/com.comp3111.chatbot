@@ -36,5 +36,14 @@ dependencies {
 	compile('me.ghui:Fruit:1.0.4')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	// testCompile('org.springframework.boot:spring-boot-starter-test')
+	
+	compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
+}
+
+
+    
+
+test {
+    environment "DATABASE_URL", "postgres://jazesxqewiyfam:a956f70bccc08cf4cb37a483e9c869b555c3dbb7eb4de0b850712e10579094dc@ec2-184-73-189-221.compute-1.amazonaws.com:5432/d8hcmd7u02j0e3" 
 }
 

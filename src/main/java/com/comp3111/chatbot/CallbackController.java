@@ -6,8 +6,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -68,6 +70,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+    private static int number = 0;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -219,8 +222,40 @@ public class CallbackController {
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         String text = content.getText();
-
+        text=text.toLowerCase();
+        
         log.info("Got text message from {}: {}", replyToken, text);
+        if (number==1) {
+        		String replyPeople="Not found.";
+        	
+	        URLConnectionReader search = new URLConnectionReader();
+	        	PeopleList result=search.SearchPeople(text);
+	        ArrayList<people> resultList = result.getList();
+	        	
+	        	StringBuilder results = new StringBuilder();
+	        if (result !=null) {
+	        		
+	        	for (int i = 0; i < resultList.size(); i++) {
+	        		results.append(resultList.get(i).getTitle());
+	        		results.append("\n");
+	        		results.append(resultList.get(i).getName());
+	        		results.append("\n");
+	        		results.append(resultList.get(i).getEmail());
+	        		results.append("\n");
+	        		results.append(resultList.get(i).getPhone());
+	        		results.append("\n");
+	        		results.append(resultList.get(i).getDepartment());
+	        		results.append("\n");
+	        		results.append(resultList.get(i).getRoom());
+	        		results.append("\n");
+	    		}
+	        		replyPeople = results.toString();
+	        }
+	        
+	        this.replyText(replyToken, replyPeople);
+	        number=0;
+	        return;
+        }
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -393,11 +428,30 @@ public class CallbackController {
                         )
                 ));
                 break;
-            default:
-                log.info("Returns echo message {}: {}", replyToken, text);
+             
+            case"d":		//find people
+            		String reply ="Who do you want to find? Please enter his/her full name or ITSC.";
+            		this.replyText(
+                            replyToken,
+                            reply
+                    );
+            		number=1; // get input and search for name
+            		break;
+            
+            default:		//menu
+                
+                String default_reply ="Which information do you want to know?\n"
+                			+"a) Course information\n"
+                			+"b) Restaurant/Facilities opening hours\n"
+                			+"c) Links suggestions\n"
+                			+"d) Find people\n"
+                			+"e) Lift advisor\n"
+                			+"f) Bus arrival/Departure time\n"
+                			+"g) Deadline list\n";
+                log.info("Returns  message {}: {}", replyToken, default_reply);
                 this.replyText(
                         replyToken,
-                        text
+                        default_reply
                 );
                 break;
         }
