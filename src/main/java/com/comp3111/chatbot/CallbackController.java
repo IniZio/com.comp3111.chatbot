@@ -402,7 +402,7 @@ public class CallbackController {
                 results.append("Time for 91M: ");
                 for (String element:busETARequestHandler.getArriveTime()){
                     if (element.equals("error")){
-                        replyMessage = element;
+                        replyMessage = "error";
                         break;
                     }
                     results.append(element);
