@@ -68,6 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+    private int tag = -1;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -219,7 +220,10 @@ public class CallbackController {
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         String text = content.getText();
-
+        
+        
+        
+        
         log.info("Got text message from {}: {}", replyToken, text);
         switch (text) {
             case "profile": {
@@ -394,11 +398,12 @@ public class CallbackController {
                 ));
                 break;
             default:
-                log.info("Returns echo message {}: {}", replyToken, text);
+               /* log.info("Returns echo message {}: {}", replyToken, text);
                 this.replyText(
                         replyToken,
                         text
-                );
+                );*/
+            	courseSearch();
                 break;
         }
     }
