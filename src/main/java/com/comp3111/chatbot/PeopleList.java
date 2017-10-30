@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class PeopleList {
 	private ArrayList <people> people;
+	public static boolean too_many=false;
 	
 	public PeopleList () {
 		this.people=null;

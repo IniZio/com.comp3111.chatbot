@@ -261,6 +261,10 @@ public class CallbackController {
 		        		results.append("\n");
 		    		}
 	        }
+	        
+	        if (PeopleList.too_many==true) {
+	        		results.append("Too many results...");
+	        }
 	        replyPeople = results.toString();
 	        this.replyText(replyToken, replyPeople);
 	        number=0;

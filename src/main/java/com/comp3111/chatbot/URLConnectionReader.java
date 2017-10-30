@@ -21,17 +21,25 @@ public class URLConnectionReader {
     		Element content = doc.getElementById("p-s-table");
     	    Elements inputElements = content.getElementsByTag("td"); 
 
-    	    String [] values = new String [100];
+    	    String [] values = new String [42];
     	    PeopleList l = new PeopleList();
     	    
     	    int i=0;
     	    
     	    for(Element td : inputElements) {
-    	        values[i] = td.text();  
-    	        if (values[i].equals("No result found matching your search criteria."))
-    	        		return l;
-    	        //log.info("values {} = {}", i, values[i]);
-    	        i++; 			
+    	    		if (i<42) {
+    	    	        values[i] = td.text();  
+    	    	        if (values[i].equals("No result found matching your search criteria."))
+    	    	        		return l;
+    	    	        //log.info("values {} = {}", i, values[i]);
+    	    	        i++; 			
+    	    		}
+    	    		else
+    	    		{
+    	    			PeopleList.too_many=true;
+    	    		 	log.info("\nToo many results");
+    	    		 	break;
+    	    		}
     		}
     	    
     	    int j =0;
