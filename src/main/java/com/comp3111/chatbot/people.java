@@ -24,33 +24,33 @@ public class people{
 	}
 	
 	public String getTitle() {
-		if (this.title=="")
+		if (this.title.equals(""))
 			return "No info";
 		return this.title;
 	}
 	
 	public String getName() {
-		if (this.name=="")
+		if (this.name.equals(""))
 			return "No info";
 		return this.name;
 	}
 	public String getEmail() {
-		if (this.email=="")
+		if (this.email.equals(""))
 			return "No info";
 		return this.email;
 	}
 	public String getPhone() {
-		if (this.phone=="")
+		if (this.phone.equals(""))
 			return "No info";
 		return this.phone;
 	}
 	public String getDepartment() {
-		if (this.department=="")
+		if (this.department.equals(""))
 			return "No info";
 		return this.department;
 	}
 	public String getRoom() {
-		if (this.room=="")
+		if (this.room.equals(""))
 			return "No info";
 		return this.room;
 	}

@@ -28,7 +28,7 @@ public class URLConnectionReader {
     	    
     	    for(Element td : inputElements) {
     	        values[i] = td.text();  
-    	        if (values[i].endsWith("No result found matching your search criteria."))
+    	        if (values[i].equals("No result found matching your search criteria."))
     	        		return l;
     	        //log.info("values {} = {}", i, values[i]);
     	        i++; 			
