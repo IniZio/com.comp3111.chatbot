@@ -453,10 +453,10 @@ public class CallbackController {
                         "Bus ETA",
                         "Which bus and direction?",
                         Arrays.asList(
-                                new MessageAction("91 To Diamond Hill", "91 To Diamond Hill")
+                                new MessageAction("91 To Diamond Hill", "91 To Diamond Hill"),
 //                                new MessageAction("91M To Diamond Hill", "91M To Diamond Hill"),
 //                                new MessageAction("91 To Clear Water Bay", "91 To Clear Water Bay"),
-//                                new MessageAction("91M To Po Lam", "91M To Po Lam")
+                                new MessageAction("91M To Po Lam", "91M To Po Lam")
                         )
                 );
                 TemplateMessage busTemplateMessage = new TemplateMessage("Button alt text", busButtonsTemplate);
