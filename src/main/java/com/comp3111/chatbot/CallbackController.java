@@ -445,21 +445,30 @@ public class CallbackController {
                 this.replyText(replyToken, replyMessage);
                 break;
             }
-
-            case "bus":{
-                String imageUrl = createUri("/static/buttons/1040.jpg");
-                ButtonsTemplate busButtonsTemplate = new ButtonsTemplate(
-                        imageUrl,
-                        "Bus ETA",
-                        "Which bus and direction?",
-                        Arrays.asList(
-                                new MessageAction("91 To Diamond Hill", "91 To Diamond Hill"),
-//                                new MessageAction("91M To Diamond Hill", "91M To Diamond Hill"),
-//                                new MessageAction("91 To Clear Water Bay", "91 To Clear Water Bay"),
-                                new MessageAction("91M To Po Lam", "91M To Po Lam")
-                        )
+            case "91":{
+                ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
+                        new MessageAction("Diamond Hill", "91 To Diamond Hill"),
+                        new MessageAction("Clear Water Bay", "91 To Clear Water Bay")
                 );
-                TemplateMessage busTemplateMessage = new TemplateMessage("Button alt text", busButtonsTemplate);
+                TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in 91 To Diamond Hill or 91 To Clear Water Bay", route91ConfirmTemplate);
+                this.reply(replyToken, route91TemplateMessage);
+                break;
+            }
+            case "91M":{
+                ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
+                        new MessageAction("Diamond Hill", "91M To Diamond Hill"),
+                        new MessageAction("Clear Water Bay", "91M To Po Lam")
+                );
+                TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in 91M To Diamond Hill or 91M To Po Lam", route91MConfirmTemplate);
+                this.reply(replyToken, route91MTemplateMessage);
+                break;
+            }
+            case "bus":{
+                ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
+                        new MessageAction("91", "91"),
+                        new MessageAction("91M", "91M")
+                        );
+                TemplateMessage busTemplateMessage = new TemplateMessage("Please type in  91 or 91M", busConfirmTemplate);
                 this.reply(replyToken, busTemplateMessage);
                 break;
             }
