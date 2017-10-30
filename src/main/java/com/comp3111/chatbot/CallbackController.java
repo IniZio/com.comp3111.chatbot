@@ -6,14 +6,11 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import com.linecorp.bot.model.action.DatetimePickerAction;
+import com.linecorp.bot.model.action.*;
 import com.linecorp.bot.model.message.template.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -23,9 +20,6 @@ import com.google.common.io.ByteStreams;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.MessageContentResponse;
 import com.linecorp.bot.model.ReplyMessage;
-import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.action.PostbackAction;
-import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.BeaconEvent;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.FollowEvent;
@@ -395,21 +389,78 @@ public class CallbackController {
                         )
                 ));
                 break;
-            case "bus": {
-                String replyMessage = "no info";
-                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
-                StringBuilder results = new StringBuilder();
-                results.append("Time for 91M: ");
-                for (String element:busETARequestHandler.getArriveTime()){
-                    if (element.equals("error")){
-                        replyMessage = "error";
-                        break;
-                    }
-                    results.append(element);
-                    results.append(" ");
-                    replyMessage = results.toString();
+            case "91 To Diamond Hill":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
                 }
                 this.replyText(replyToken, replyMessage);
+                break;
+            }
+            case "91M To Diamond Hill":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
+            case "91 To Clear Water Bay":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
+            case "91M To Po Lam":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
+
+            case "bus":{
+                String imageUrl = createUri("/static/buttons/1040.jpg");
+                ButtonsTemplate busButtonsTemplate = new ButtonsTemplate(
+                        imageUrl,
+                        "Bus ETA",
+                        "Which bus and direction?",
+                        Arrays.asList(
+                                new MessageAction("91 To Diamond Hill", "91 To Diamond Hill")
+//                                new MessageAction("91M To Diamond Hill", "91M To Diamond Hill"),
+//                                new MessageAction("91 To Clear Water Bay", "91 To Clear Water Bay"),
+//                                new MessageAction("91M To Po Lam", "91M To Po Lam")
+                        )
+                );
+                TemplateMessage busTemplateMessage = new TemplateMessage("Button alt text", busButtonsTemplate);
+                this.reply(replyToken, busTemplateMessage);
                 break;
             }
             default:

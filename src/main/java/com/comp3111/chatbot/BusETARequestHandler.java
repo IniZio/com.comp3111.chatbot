@@ -30,6 +30,7 @@ public class BusETARequestHandler {
     private String route;
     private String bound;
     private  String stop;
+
     public List<String> getArriveTime() throws Exception {
         URL url = new URL("http://etav3.kmb.hk/?action=geteta&lang=en&route=" + route + "&bound=" + bound + "&stop_seq=" + stop);
 //        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
@@ -55,5 +56,20 @@ public class BusETARequestHandler {
             }
         }
         return arrivalTimes;
+    }
+
+    public String getReplyMessage() throws Exception{
+        String replyMessage = "no info";
+        StringBuilder results = new StringBuilder();
+        for (String element:getArriveTime()){
+            if (element.equals("error")){
+                replyMessage = "currently no info";
+                break;
+            }
+            results.append(element);
+            results.append(" ");
+            replyMessage = results.toString();
+        }
+        return replyMessage;
     }
 }
