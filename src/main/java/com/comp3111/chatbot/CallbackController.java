@@ -457,7 +457,7 @@ public class CallbackController {
             case "91M":{
                 ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
                         new MessageAction("Diamond Hill", "91M To Diamond Hill"),
-                        new MessageAction("Clear Water Bay", "91M To Po Lam")
+                        new MessageAction("Po Lam", "91M To Po Lam")
                 );
                 TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in 91M To Diamond Hill or 91M To Po Lam", route91MConfirmTemplate);
                 this.reply(replyToken, route91MTemplateMessage);

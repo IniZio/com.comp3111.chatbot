@@ -49,6 +49,10 @@ public class BusETARequestHandler {
             try{
                 JSONObject item = nextBus.getJSONObject(i);
                 String timeString = item.getString("t");
+                if (timeString.equals("The last bus has departed from this bus stop")){
+                    arrivalTimes.add(timeString);
+                    break;
+                }
                 String[] formattedTimeString = timeString.split("\\s+");
                 arrivalTimes.add(formattedTimeString[0]);
             } catch (JSONException e) {
