@@ -6,14 +6,14 @@ import java.io.IOException;
 import java.util.Iterator;
 import org.json.*;
 
-public class courseSearch {
+public class courseInfoController {
 	
 	static String courseSearch(String text){
 		JSONObject obj = new JSONObject("../resources/courses_dict.json");
 		
-		JSONArray courses = obj.getJSONArray(key)
+		JSONArray courses = obj.getJSONArray(text);
 		
-		for (Object o : a)
+		for (Object o : courses)
 		{
 			JSONObject person = (JSONObject) o;
 
@@ -33,5 +33,6 @@ public class courseSearch {
 				System.out.println(c+"");
 			}
 		}
+		return "test";
 	}
 }

@@ -403,7 +403,18 @@ public class CallbackController {
                         replyToken,
                         text
                 );*/
-            	courseSearch();
+                if(text.matches("^([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?$")){
+                ConfirmTemplate confirmTemplate = new ConfirmTemplate(
+                    "Do it?",
+                    new MessageAction("Yes", "Yes!"),
+                    new MessageAction("No", "No!")
+                );
+                String result = courseInfoController.courseSearch(text);
+                this.reply(
+                    replyToken,
+                    new TextMessage("result")
+                );
+                }
                 break;
         }
     }
