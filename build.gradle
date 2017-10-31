@@ -34,5 +34,12 @@ dependencies {
 	compile('com.linecorp.bot:line-bot-spring-boot:1.10.0')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	// testCompile('org.springframework.boot:spring-boot-starter-test')
+	
+	
+    compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
+}
+
+test {
+    environment "DATABASE_URL", "postgres://okijjfqlyvfhpb:c36dd182995a65d43682adaf071075347f8d6caf1a1eb43599ad4a0a6a3ae080@ec2-54-243-185-123.compute-1.amazonaws.com:5432/dcpv1r4nberaup" 
 }
 

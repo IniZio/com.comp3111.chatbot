@@ -394,10 +394,23 @@ public class CallbackController {
                 ));
                 break;
             default:
+            	/*
                 log.info("Returns echo message {}: {}", replyToken, text);
                 this.replyText(
                         replyToken,
                         text
+                );
+                break;*/
+            	String reply = null;
+            	try {
+            		reply = database.search(text);
+            	} catch (Exception e) {
+            		reply = text;
+            	}
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                this.replyText(
+                        replyToken,
+                        " says " + reply
                 );
                 break;
         }
@@ -450,4 +463,12 @@ public class CallbackController {
         Path path;
         String uri;
     }
+    
+	public CallbackController() {
+		database = new SQLDatabaseEngine();
+		
+	}
+
+	private SQLDatabaseEngine database;
+	
 }
