@@ -53,8 +53,8 @@ public class BusETARequestHandler {
                     arrivalTimes.add(timeString);
                     break;
                 }
-                String[] formattedTimeString = timeString.split("\\s+");
-                arrivalTimes.add(formattedTimeString[0]);
+                String[] formattedTimeString = timeString.split("[^\\w+\\:\\w+]");
+                arrivalTimes.add(formattedTimeString[0].trim());
             } catch (JSONException e) {
                 arrivalTimes.add("error");
             }
