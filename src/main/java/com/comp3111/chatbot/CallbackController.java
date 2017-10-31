@@ -159,7 +159,12 @@ public class CallbackController {
     @EventMapping
     public void handlePostbackEvent(PostbackEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param " + event.getPostbackContent().getParams().toString());
+        if( event.getPostbackContent().getData().contains("course_info_all")){
+            String result = courseInfoController.courseSearch(text);
+        }
+        else{
+            this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param " + event.getPostbackContent().getParams().toString());
+    }
     }
 
     @EventMapping
@@ -404,16 +409,18 @@ public class CallbackController {
                         text
                 );*/
                 if(text.matches("^([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?$")){
-                ConfirmTemplate confirmTemplate = new ConfirmTemplate(
-                    "Do it?",
-                    new MessageAction("Yes", "Yes!"),
-                    new MessageAction("No", "No!")
-                );
-                String result = courseInfoController.courseSearch(text);
-                this.reply(
-                    replyToken,
-                    new TextMessage("result")
-                );
+                    ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
+                        null,
+                        "What part you want to know about the course "+text+"?",
+                        "Options:",
+                        Arrays.asList(
+                                new PostbackAction("All",
+                                                   "course_info_all&"+text),
+                                new MessageAction("Any More?",
+                                                  "Sorry, we currently only support displaying these information for you.")
+                        ));
+                TemplateMessage templateMessage = new TemplateMessage("Course Information Selecter", buttonsTemplate);
+                this.reply(replyToken, templateMessage);
                 }
                 break;
         }
