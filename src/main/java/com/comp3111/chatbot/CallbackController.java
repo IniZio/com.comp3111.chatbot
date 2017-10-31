@@ -405,7 +405,7 @@ public class CallbackController {
             	try {
             		reply = database.search(text);
             	} catch (Exception e) {
-            		reply = text;
+            		reply = "Exception occur";
             	}
                 log.info("Returns echo message {}: {}", replyToken, reply);
                 this.replyText(
