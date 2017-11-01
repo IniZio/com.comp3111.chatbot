@@ -17,11 +17,13 @@ public class SQLDatabaseEngine {
 		try {
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-					"SELECT openinghours FROM facilities WHERE index=?");
-			stmt.setString(1, text);
+					"SELECT * FROM facilities WHERE index=?");
+			int n = Integer.parseInt(text)
+			stmt.setInt(1, n);
 			ResultSet rs = stmt.executeQuery();
 			rs.next();
-			result = rs.getString(1);
+			result = "The opening hour of " + rs.getString(2) + "is:" + rs.getString(3);
+			
 			rs.close();
 			stmt.close();
 			connection.close();
