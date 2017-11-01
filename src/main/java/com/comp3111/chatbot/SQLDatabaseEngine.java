@@ -18,7 +18,7 @@ public class SQLDatabaseEngine {
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
 					"SELECT * FROM facilities WHERE index=?");
-			int n = Integer.parseInt(text)
+			int n = Integer.parseInt(text);
 			stmt.setInt(1, n);
 			ResultSet rs = stmt.executeQuery();
 			rs.next();
