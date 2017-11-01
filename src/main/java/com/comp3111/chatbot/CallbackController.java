@@ -412,7 +412,7 @@ public class CallbackController {
             case "b":		//provide facilities time
             	String reply = null;
             	try {
-            		reply = database.show(text);
+            		reply = database.show();
             	} catch (Exception e) {
             		reply = "Exception occur";
             	}
