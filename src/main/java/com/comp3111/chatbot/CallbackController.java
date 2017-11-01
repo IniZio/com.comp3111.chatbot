@@ -394,7 +394,21 @@ public class CallbackController {
                 ));
                 break;
                 
-
+            case "c":		// suggestedLinks
+	        		String reply ="Which link do you want to find?\n"
+	        				+"1) Register for a locker\n"
+                			+"2) Register for courses\n"
+                			+"3) Check grades\n"
+                			+"4) Find school calendar\n"
+                			+"5) Book library rooms\n"
+                			+"6) Find lecture materials\n";
+	        		
+	        		this.replyText(
+	                        replyToken,
+	                        reply
+	                );
+	        					// get input and search for links
+	        		break;
             		
             default:
                 String default_reply ="Which information do you want to know?\n"
