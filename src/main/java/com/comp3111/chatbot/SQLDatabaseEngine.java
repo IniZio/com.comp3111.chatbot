@@ -17,7 +17,7 @@ public class SQLDatabaseEngine {
 		try {
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-					"SELECT response FROM t1 where concat('%', ?, '%') like concat('%', keyword, '%')");
+					"SELECT openinghours FROM facities where index=?");
 			stmt.setString(1, text);
 			ResultSet rs = stmt.executeQuery();
 			rs.next();

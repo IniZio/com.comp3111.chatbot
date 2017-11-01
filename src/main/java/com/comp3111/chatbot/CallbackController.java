@@ -68,6 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+    private static int tag = 0;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -219,8 +220,23 @@ public class CallbackController {
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         String text = content.getText();
-
+ 
         log.info("Got text message from {}: {}", replyToken, text);
+        
+        if(tag == 'b')
+        {
+        	String reply = null;
+        	try {
+        		reply = database.search(text);
+        	} catch (Exception e) {
+        		reply = "Exception occur";
+        	}
+            log.info("Returns echo message {}: {}", replyToken, reply);
+            this.replyText(
+                    replyToken,
+                    "The facility opening hour:" + reply
+            );
+        }
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -393,6 +409,14 @@ public class CallbackController {
                         )
                 ));
                 break;
+            case"b":		//provide facilities time
+        		String reply ="Chose a faciliteis below";
+        		this.replyText(
+                        replyToken,
+                        reply
+                );
+        		tag = 'b';
+        		break;
             default:
             	/*
                 log.info("Returns echo message {}: {}", replyToken, text);
@@ -401,7 +425,7 @@ public class CallbackController {
                         text
                 );
                 break;*/
-            	String reply = null;
+            	/*String reply = null;
             	try {
             		reply = database.search(text);
             	} catch (Exception e) {
@@ -412,7 +436,22 @@ public class CallbackController {
                         replyToken,
                         " says " + reply
                 );
-                break;
+                break;*/
+                String default_reply ="Which information do you want to know?\n"
+            			+"a) Course information\n"
+            			+"b) Restaurant/Facilities opening hours\n"
+            			+"c) Links suggestions\n"
+            			+"d) Find people\n"
+            			+"e) Lift advisor\n"
+            			+"f) Bus arrival/Departure time\n"
+            			+"g) Deadline list\n";
+            log.info("Returns  message {}: {}", replyToken, default_reply);
+            this.replyText(
+                    replyToken,
+                    default_reply
+            );
+            break;
+
         }
     }
 
