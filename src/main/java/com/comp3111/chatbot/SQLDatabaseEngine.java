@@ -17,7 +17,7 @@ public class SQLDatabaseEngine {
 		try {
 			Connection connection = getConnection();
 			PreparedStatement stmt = connection.prepareStatement(
-					"SELECT openinghours FROM facilities where index=?");
+					"SELECT openinghours FROM facilities WHERE index=?");
 			stmt.setString(1, text);
 			ResultSet rs = stmt.executeQuery();
 			rs.next();
