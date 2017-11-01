@@ -47,7 +47,7 @@ public class LiftAdvisor {
             String[] suggested = suggestedResult.split(";");
 
             String[] buildingFind = suggested[suggested.length-2].split("\\d");
-            String[] liftFind = suggested[suggested.length-2].split("\\D+");
+            String[] liftFind = suggested[0].split("\\D+");
 
             String building = (buildingFind.length == 0)?"Academic Building":buildingFind[0];
             if (building.equals("NAB"))
