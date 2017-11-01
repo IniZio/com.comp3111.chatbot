@@ -454,20 +454,12 @@ public class CallbackController {
             		number=1; // get input and search for name
             		break;
             
-            default:		//menu
+            default:		
                 
-                String default_reply ="Which information do you want to know?\n"
-                			+"a) Course information\n"
-                			+"b) Restaurant/Facilities opening hours\n"
-                			+"c) Links suggestions\n"
-                			+"d) Find people\n"
-                			+"e) Lift advisor\n"
-                			+"f) Bus arrival/Departure time\n"
-                			+"g) Deadline list\n";
-                log.info("Returns  message {}: {}", replyToken, default_reply);
+                log.info("Returns echo message {}: {}", replyToken, text);
                 this.replyText(
                         replyToken,
-                        default_reply
+                        text
                 );
                 break;
         }
