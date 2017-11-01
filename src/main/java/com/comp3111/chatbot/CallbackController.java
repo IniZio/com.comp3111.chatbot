@@ -410,16 +410,16 @@ public class CallbackController {
                 ));
                 break;
             case "b":		//provide facilities time
-            	String reply = null;
+            	String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
             	try {
-            		reply = database.show();
+            		reply += database.show();
             	} catch (Exception e) {
             		reply = "Exception occur";
             	}
                 log.info("Returns echo message {}: {}", replyToken, reply);
                 this.replyText(
                         replyToken,
-                         reply
+                          reply
                 );
         		tag = 'b';
         		break;
