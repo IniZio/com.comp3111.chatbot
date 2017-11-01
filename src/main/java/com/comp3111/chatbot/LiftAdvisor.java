@@ -12,9 +12,9 @@ public class LiftAdvisor {
 
     public LiftAdvisor(String text){
         String[] textBreakdown = text.split("\\D+");
-        for (String element:textBreakdown){
-            if (!element.equals("")) {
-                this.queryRoomNumber = element;
+        for (String numberFromText:textBreakdown){
+            if (!numberFromText.equals("")) {
+                this.queryRoomNumber = numberFromText;
                 break;
             }
         }
@@ -24,12 +24,16 @@ public class LiftAdvisor {
         URL url = new URL("http://pathadvisor.ust.hk/phplib/search.php?keyword="+ queryRoomNumber +"&floor=Overall&type=lift&same_floor=yes");
         String queryReturnedString = IOUtils.toString(url, Charset.defaultCharset());
         List<String> suggestedResults = new ArrayList<>();
-        for (String element:queryReturnedString.split("\\n")) {
-            if (!element.equals("") && element.length() > 5) {
-                suggestedResults.add(element);
+        for (String suggestedResult:queryReturnedString.split("\\n")) {
+            if (!suggestedResult.equals("") && suggestedResult.length() > 5) {
+                suggestedResults.add(suggestedResult);
             }
         }
         return suggestedResults;
+    }
+
+    public boolean noRoomNumberDetected(){
+        return this.queryRoomNumber.equals("");
     }
 
     public String getReplyMessage() throws Exception{
@@ -39,8 +43,8 @@ public class LiftAdvisor {
             return replyMessage;
         }
         results.append("Here are the related results:\n\n");
-        for (String element:getSuggestedResults()){
-            String[] suggested = element.split(";");
+        for (String suggestedResult:getSuggestedResults()){
+            String[] suggested = suggestedResult.split(";");
 
             String[] buildingFind = suggested[suggested.length-2].split("\\d");
             String[] liftFind = suggested[suggested.length-2].split("\\D+");
@@ -49,12 +53,12 @@ public class LiftAdvisor {
             if (building.equals("NAB"))
                 building = "LSK";
             String liftNumber = "0";
-//            for (String elements:liftFind){
-//                if(!element.equals("")){
-//                    liftNumber = element;
-//                    break;
-//                }
-//            }
+            for (String lift:liftFind){
+                if(!lift.equals("")){
+                    liftNumber = lift;
+                    break;
+                }
+            }
             String roomNumber = suggested[suggested.length-1];
             results.append("Room: " + roomNumber + ", Building: " + building + ", Lift Number: " + liftNumber + "\n");
         }
