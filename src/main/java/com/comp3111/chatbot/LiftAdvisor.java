@@ -12,6 +12,7 @@ public class LiftAdvisor {
 
     public LiftAdvisor(String text){
         String[] textBreakdown = text.split("\\D+");
+        this.queryRoomNumber = "NA";
         for (String numberFromText:textBreakdown){
             if (!numberFromText.equals("")) {
                 this.queryRoomNumber = numberFromText;
@@ -33,7 +34,7 @@ public class LiftAdvisor {
     }
 
     public boolean noRoomNumberDetected(){
-        return this.queryRoomNumber.equals("");
+        return this.queryRoomNumber.equals("NA");
     }
 
     public String getReplyMessage() throws Exception{
