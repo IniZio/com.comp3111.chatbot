@@ -46,15 +46,17 @@ public class LiftAdvisor {
             String[] liftFind = suggested[suggested.length-2].split("\\D+");
 
             String building = (buildingFind.length == 0)?"Academic Building":buildingFind[0];
+            if (building.equals("NAB"))
+                building = "LSK";
             String liftNumber = "0";
-            for (String elements:liftFind){
-                if(!element.equals("")){
-                    liftNumber = element;
-                    break;
-                }
-            }
+//            for (String elements:liftFind){
+//                if(!element.equals("")){
+//                    liftNumber = element;
+//                    break;
+//                }
+//            }
             String roomNumber = suggested[suggested.length-1];
-            results.append("Room: " + roomNumber + " Building: " + building + " Lift Number: " +liftNumber + "\n");
+            results.append("Room: " + roomNumber + ", Building: " + building + ", Lift Number: " + liftNumber + "\n");
         }
         replyMessage = results.toString();
         return replyMessage;

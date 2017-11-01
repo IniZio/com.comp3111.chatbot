@@ -227,6 +227,9 @@ public class CallbackController {
             try {
                 LiftAdvisor liftAdvisor = new LiftAdvisor(text);
                 replyMessage = liftAdvisor.getReplyMessage();
+                if (replyMessage.equals("Room not found.")){
+                    replyMessage = "Please enter room number.";
+                }
             }catch (Exception e){
                 replyMessage = "error";
             }
