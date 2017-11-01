@@ -22,7 +22,7 @@ public class SQLDatabaseEngine {
 			stmt.setInt(1, n);
 			ResultSet rs = stmt.executeQuery();
 			rs.next();
-			result = "The opening hour of " + rs.getString(2) + "is:" + rs.getString(3);
+			result = "The opening hour of " + rs.getString(2) + "is:" + rs.getString(4);
 			
 			rs.close();
 			stmt.close();
