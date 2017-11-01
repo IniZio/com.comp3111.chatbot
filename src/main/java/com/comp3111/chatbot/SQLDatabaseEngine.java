@@ -37,6 +37,33 @@ public class SQLDatabaseEngine {
 			return result;
 		throw new Exception("NOT FOUND");
 	}
+	 
+	 String show() throws Exception {
+		//Write your code here
+		String result = null;
+		try {
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+					"SELECT * FROM facilities");
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next())
+			{
+				result += rs.getInt(1) + ". " + rs.getString(2) + "\n";
+			}
+			
+			rs.close();
+			stmt.close();
+			connection.close();
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException: ", e2.toString());
+		}
+
+		if(result!=null)
+			return result;
+		throw new Exception("NOT FOUND");
+	}
 	
 	
 	private Connection getConnection() throws URISyntaxException, SQLException {

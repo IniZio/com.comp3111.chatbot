@@ -234,7 +234,7 @@ public class CallbackController {
             log.info("Returns echo message {}: {}", replyToken, reply);
             this.replyText(
                     replyToken,
-                    "The facility opening hour:" + reply
+                     reply
             );
         }
         switch (text) {
@@ -410,10 +410,16 @@ public class CallbackController {
                 ));
                 break;
             case "b":		//provide facilities time
-        		String reply ="Chose a faciliteis below:";
-        		this.replyText(
+            	String reply = null;
+            	try {
+            		reply = database.show(text);
+            	} catch (Exception e) {
+            		reply = "Exception occur";
+            	}
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                this.replyText(
                         replyToken,
-                        reply
+                         reply
                 );
         		tag = 'b';
         		break;
