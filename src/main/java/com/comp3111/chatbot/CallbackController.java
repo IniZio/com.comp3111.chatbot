@@ -409,8 +409,8 @@ public class CallbackController {
                         )
                 ));
                 break;
-            case"b":		//provide facilities time
-        		String reply ="Chose a faciliteis below";
+            case "b":		//provide facilities time
+        		String reply ="Chose a faciliteis below:";
         		this.replyText(
                         replyToken,
                         reply
