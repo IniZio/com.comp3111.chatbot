@@ -48,7 +48,10 @@ public class SQLDatabaseEngine {
 			ResultSet rs = stmt.executeQuery();
 			while(rs.next())
 			{
-				result += rs.getInt(1) + ". " + rs.getString(2) + "\n";
+				if(result == null)
+					result = rs.getInt(1) + ". " + rs.getString(2) + "\n";
+				else
+					result += rs.getInt(1) + ". " + rs.getString(2) + "\n";
 			}
 			
 			rs.close();
@@ -62,7 +65,8 @@ public class SQLDatabaseEngine {
 
 		if(result!=null)
 			return result;
-		throw new Exception("NOT FOUND");
+		else
+			return "NOT FOUND";
 	}
 	
 	
