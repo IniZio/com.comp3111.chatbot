@@ -393,13 +393,25 @@ public class CallbackController {
                         )
                 ));
                 break;
+                
+
+            		
             default:
-                log.info("Returns echo message {}: {}", replyToken, text);
-                this.replyText(
-                        replyToken,
-                        text
-                );
-                break;
+                String default_reply ="Which information do you want to know?\n"
+            			+"a) Course information\n"
+            			+"b) Restaurant/Facilities opening hours\n"
+            			+"c) Links suggestions\n"
+            			+"d) Find people\n"
+            			+"e) Lift advisor\n"
+            			+"f) Bus arrival/Departure time\n"
+            			+"g) Deadline list\n"
+            			+"h) Set notifications\n";
+            log.info("Returns  message {}: {}", replyToken, default_reply);
+            this.replyText(
+                    replyToken,
+                    default_reply
+            );
+            break;
         }
     }
 
