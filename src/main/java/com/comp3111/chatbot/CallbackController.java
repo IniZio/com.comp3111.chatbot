@@ -6,8 +6,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -68,6 +70,9 @@ import lombok.extern.slf4j.Slf4j;
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+    // For People
+    private static int number = 0;
+    // For OpeningHours
     private static int tag = 0;
 
     @EventMapping
@@ -221,9 +226,58 @@ public class CallbackController {
             throws Exception {
     	
         String text = content.getText();
- 
+        text=text.toLowerCase();        
+        
         log.info("Got text message from {}: {}", replyToken, text);
         
+        if (number==1) {			// for finding people
+        		String replyPeople;
+        	
+	        URLConnectionReader search = new URLConnectionReader();
+	        	PeopleList result=search.SearchPeople(text);
+	        ArrayList<people> resultList = result.getList();
+	        	
+	        	StringBuilder results = new StringBuilder();
+	        	results.append("Search Result(s):");
+	        	
+	        if (resultList ==null) {
+                    results.append("\nNot found.");
+                    this.replyText(replyToken, results.toString());
+                    return;
+	        }
+	        else{
+		        	for (people p : resultList){
+		        		results.append("\n");
+		        		results.append("Title: ");
+		        		results.append(p.getTitle());
+		        		results.append("\n");
+		        		results.append("Name: ");
+		        		results.append(p.getName());
+		        		results.append("\n");
+		        		results.append("Email: ");
+		        		results.append(p.getEmail());
+		        		results.append("\n");
+		        		results.append("Phone: ");
+		        		results.append(p.getPhone());
+		        		results.append("\n");
+		        		results.append("Department: ");
+		        		results.append(p.getDepartment());
+		        		results.append("\n");
+		        		results.append("Room: ");
+		        		results.append(p.getRoom());
+		        		results.append("\n");
+		    		}
+	        }
+	        
+	        if (PeopleList.too_many==true) {
+	        		results.append("Too many results...");
+	        }
+	        replyPeople = results.toString();
+	        this.replyText(replyToken, replyPeople);
+	        number=0;
+	        return;
+        }
+ 
         if(tag == 'b')
         {
         	String reply = null;
@@ -238,6 +292,8 @@ public class CallbackController {
                      reply
             );
         }
+
+        String reply = "";
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -410,54 +466,63 @@ public class CallbackController {
                         )
                 ));
                 break;
-
+                
             case "b":		//provide facilities time
-            	String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
-            	try {
-            		reply += database.showFacilitiesChoices();
-            	} catch (Exception e) {
-            		reply = "Exception occur";
-            	}
+                reply = "Please enter the number in front of the facilities to query the opening hour:\n";
+                try {
+                    reply += database.showFacilitiesChoices();
+                } catch (Exception e) {
+                    reply = "Exception occur";
+                }
                 log.info("Returns echo message {}: {}", replyToken, reply);
                 this.replyText(
-                        replyToken,
-                          reply
+                    replyToken,
+                    reply
                 );
-        		tag = 'b';
-        		break;
-                
+                tag = 'b';
+                break;
+                    
             case "c":		// suggestedLinks
-	        		String reply ="Which link do you want to find?\n"
-	        				+"1) Register for a locker\n"
-                			+"2) Register for courses\n"
-                			+"3) Check grades\n"
-                			+"4) Find school calendar\n"
-                			+"5) Book library rooms\n"
-                			+"6) Find lecture materials\n";
-	        		
-	        		this.replyText(
-	                        replyToken,
-	                        reply
-	                );
-	        					// get input and search for links
-	        		break;
-            		
+                reply ="Which link do you want to find?\n"
+                +"1) Register for a locker\n"
+                +"2) Register for courses\n"
+                +"3) Check grades\n"
+                +"4) Find school calendar\n"
+                +"5) Book library rooms\n"
+                +"6) Find lecture materials\n";
+                
+                this.replyText(
+                    replyToken,
+                    reply
+                    );
+                    // get input and search for links
+                break;
+            
+            case"d":		//find people
+                reply ="Who do you want to find? Please enter his/her full name or ITSC.";
+                this.replyText(
+                        replyToken,
+                        reply
+                );
+                number=1; // get input and search for name
+                break;
+                        
             default:
                 String default_reply ="Which information do you want to know?\n"
-            			+"a) Course information\n"
-            			+"b) Restaurant/Facilities opening hours\n"
-            			+"c) Links suggestions\n"
-            			+"d) Find people\n"
-            			+"e) Lift advisor\n"
-            			+"f) Bus arrival/Departure time\n"
-            			+"g) Deadline list\n"
-            			+"h) Set notifications\n";
-            log.info("Returns  message {}: {}", replyToken, default_reply);
-            this.replyText(
-                    replyToken,
-                    default_reply
-            );
-            break;
+                    +"a) Course information\n"
+                    +"b) Restaurant/Facilities opening hours\n"
+                    +"c) Links suggestions\n"
+                    +"d) Find people\n"
+                    +"e) Lift advisor\n"
+                    +"f) Bus arrival/Departure time\n"
+                    +"g) Deadline list\n"
+                    +"h) Set notifications\n";
+                log.info("Returns  message {}: {}", replyToken, default_reply);
+                this.replyText(
+                        replyToken,
+                        default_reply
+                );
+                break;
         }
     }
 
