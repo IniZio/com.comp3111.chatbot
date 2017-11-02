@@ -159,8 +159,11 @@ public class CallbackController {
     @EventMapping
     public void handlePostbackEvent(PostbackEvent event) {
         String replyToken = event.getReplyToken();
-        if( event.getPostbackContent().getData().contains("course_info_all")){
-            String result = courseInfoController.courseSearch(text);
+        String pb_data = event.getPostbackContent().getData();
+        if( pb_data.contains("course_info_all")){
+            String[] parts = pb_data.split("&");
+            String result = courseInfoController.courseSearch(parts[2]);
+            this.replyText(replyToken, result);
         }
         else{
             this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param " + event.getPostbackContent().getParams().toString());
