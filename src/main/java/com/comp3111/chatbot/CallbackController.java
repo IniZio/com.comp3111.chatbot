@@ -6,7 +6,12 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -64,6 +69,10 @@ import com.comp3111.chatbot.BusETARequestHandler;
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+    // For People
+    private static int number = 0;
+    // For OpeningHours
+    private static int tag = 0;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -214,9 +223,94 @@ public class CallbackController {
 
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
+    	
         String text = content.getText();
-
+        text=text.toLowerCase();        
+        
         log.info("Got text message from {}: {}", replyToken, text);
+        text=text.toLowerCase();
+        // For lift advisor
+        if (text.contains("room") || text.contains("rm")){
+            String replyMessage;
+            try {
+                LiftAdvisor liftAdvisor = new LiftAdvisor(text);
+                if (liftAdvisor.noRoomNumberDetected()){
+                    replyMessage = "No room number detected. Please enter number along with keyword room or rm";
+                    this.replyText(replyToken, replyMessage);
+                    return;
+                }
+                replyMessage = liftAdvisor.getReplyMessage();
+            }catch (Exception e){
+                replyMessage = "error";
+            }
+            this.replyText(replyToken, replyMessage);
+            return;
+        }
+        
+        if (number==1) {			// for finding people
+        		String replyPeople;
+        	
+	        URLConnectionReader search = new URLConnectionReader();
+	        	PeopleList result=search.SearchPeople(text);
+	        ArrayList<people> resultList = result.getList();
+	        	
+	        	StringBuilder results = new StringBuilder();
+	        	results.append("Search Result(s):");
+	        	
+	        if (resultList ==null) {
+                    results.append("\nNot found.");
+                    this.replyText(replyToken, results.toString());
+                    return;
+	        }
+	        else{
+		        	for (people p : resultList){
+		        		results.append("\n");
+		        		results.append("Title: ");
+		        		results.append(p.getTitle());
+		        		results.append("\n");
+		        		results.append("Name: ");
+		        		results.append(p.getName());
+		        		results.append("\n");
+		        		results.append("Email: ");
+		        		results.append(p.getEmail());
+		        		results.append("\n");
+		        		results.append("Phone: ");
+		        		results.append(p.getPhone());
+		        		results.append("\n");
+		        		results.append("Department: ");
+		        		results.append(p.getDepartment());
+		        		results.append("\n");
+		        		results.append("Room: ");
+		        		results.append(p.getRoom());
+		        		results.append("\n");
+		    		}
+	        }
+	        
+	        if (PeopleList.too_many==true) {
+	        		results.append("Too many results...");
+	        }
+	        replyPeople = results.toString();
+	        this.replyText(replyToken, replyPeople);
+	        number=0;
+	        return;
+        }
+ 
+        if(tag == 'b')
+        {
+        	String reply = null;
+        	try {
+        		reply = database.openingHourSearch(text);
+        	} catch (Exception e) {
+        		reply = "Cannot find given facility";
+        	}
+            log.info("Returns echo message {}: {}", replyToken, reply);
+            this.replyText(
+                    replyToken,
+                     reply
+            );
+        }
+
+        String reply = "";
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -243,153 +337,47 @@ public class CallbackController {
                 }
                 break;
             }
-            case "bye": {
-                Source source = event.getSource();
-                if (source instanceof GroupSource) {
-                    this.replyText(replyToken, "Leaving group");
-                    lineMessagingClient.leaveGroup(((GroupSource) source).getGroupId()).get();
-                } else if (source instanceof RoomSource) {
-                    this.replyText(replyToken, "Leaving room");
-                    lineMessagingClient.leaveRoom(((RoomSource) source).getRoomId()).get();
-                } else {
-                    this.replyText(replyToken, "Bot can't leave from 1:1 chat");
+            
+            case "b":		//provide facilities time
+                reply = "Please enter the number in front of the facilities to query the opening hour:\n";
+                try {
+                    reply += database.showFacilitiesChoices();
+                } catch (Exception e) {
+                    reply = "Exception occur";
                 }
-                break;
-            }
-            case "confirm": {
-                ConfirmTemplate confirmTemplate = new ConfirmTemplate(
-                        "Do it?",
-                        new MessageAction("Yes", "Yes!"),
-                        new MessageAction("No", "No!")
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                this.replyText(
+                    replyToken,
+                    reply
                 );
-                TemplateMessage templateMessage = new TemplateMessage("Confirm alt text", confirmTemplate);
-                this.reply(replyToken, templateMessage);
+                tag = 'b';
                 break;
-            }
-            case "buttons": {
-                String imageUrl = createUri("/static/buttons/1040.jpg");
-                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
-                        imageUrl,
-                        "My button sample",
-                        "Hello, my button",
-                        Arrays.asList(
-                                new URIAction("Go to line.me",
-                                              "https://line.me"),
-                                new PostbackAction("Say hello1",
-                                                   "hello �����"),
-                                new PostbackAction("閮� hello2",
-                                                   "hello �����",
-                                                   "hello �����"),
-                                new MessageAction("Say message",
-                                                  "Rice=蝐�")
-                        ));
-                TemplateMessage templateMessage = new TemplateMessage("Button alt text", buttonsTemplate);
-                this.reply(replyToken, templateMessage);
+                    
+            case "c":		// suggestedLinks
+                reply ="Which link do you want to find?\n"
+                +"1) Register for a locker\n"
+                +"2) Register for courses\n"
+                +"3) Check grades\n"
+                +"4) Find school calendar\n"
+                +"5) Book library rooms\n"
+                +"6) Find lecture materials\n";
+                
+                this.replyText(
+                    replyToken,
+                    reply
+                    );
+                    // get input and search for links
                 break;
-            }
-            case "carousel": {
-                String imageUrl = createUri("/static/buttons/1040.jpg");
-                CarouselTemplate carouselTemplate = new CarouselTemplate(
-                        Arrays.asList(
-                                new CarouselColumn(imageUrl, "hoge", "fuga", Arrays.asList(
-                                        new URIAction("Go to line.me",
-                                                      "https://line.me"),
-                                        new URIAction("Go to line.me",
-                                                "https://line.me"),
-                                        new PostbackAction("Say hello1",
-                                                           "hello �����")
-                                )),
-                                new CarouselColumn(imageUrl, "hoge", "fuga", Arrays.asList(
-                                        new PostbackAction("閮� hello2",
-                                                           "hello �����",
-                                                           "hello �����"),
-                                        new PostbackAction("閮� hello2",
-                                                "hello �����",
-                                                "hello �����"),
-                                        new MessageAction("Say message",
-                                                          "Rice=蝐�")
-                                )),
-                                new CarouselColumn(imageUrl, "Datetime Picker", "Please select a date, time or datetime", Arrays.asList(
-                                        new DatetimePickerAction("Datetime",
-                                                "action=sel",
-                                                "datetime",
-                                                "2017-06-18T06:15",
-                                                "2100-12-31T23:59",
-                                                "1900-01-01T00:00"),
-                                        new DatetimePickerAction("Date",
-                                                "action=sel&only=date",
-                                                "date",
-                                                "2017-06-18",
-                                                "2100-12-31",
-                                                "1900-01-01"),
-                                        new DatetimePickerAction("Time",
-                                                "action=sel&only=time",
-                                                "time",
-                                                "06:15",
-                                                "23:59",
-                                                "00:00")
-                                ))
-                        ));
-                TemplateMessage templateMessage = new TemplateMessage("Carousel alt text", carouselTemplate);
-                this.reply(replyToken, templateMessage);
+            
+            case"d":		//find people
+                reply ="Who do you want to find? Please enter his/her full name or ITSC.";
+                this.replyText(
+                        replyToken,
+                        reply
+                );
+                number=1; // get input and search for name
                 break;
-            }
-            case "image_carousel": {
-                String imageUrl = createUri("/static/buttons/1040.jpg");
-                ImageCarouselTemplate imageCarouselTemplate = new ImageCarouselTemplate(
-                        Arrays.asList(
-                                new ImageCarouselColumn(imageUrl,
-                                        new URIAction("Goto line.me",
-                                                "https://line.me")
-                                ),
-                                new ImageCarouselColumn(imageUrl,
-                                        new MessageAction("Say message",
-                                                "Rice=蝐�")
-                                ),
-                                new ImageCarouselColumn(imageUrl,
-                                        new PostbackAction("閮� hello2",
-                                                "hello �����",
-                                                "hello �����")
-                                )
-                        ));
-                TemplateMessage templateMessage = new TemplateMessage("ImageCarousel alt text", imageCarouselTemplate);
-                this.reply(replyToken, templateMessage);
-                break;
-            }
-            case "imagemap":
-                this.reply(replyToken, new ImagemapMessage(
-                        createUri("/static/rich"),
-                        "This is alt text",
-                        new ImagemapBaseSize(1040, 1040),
-                        Arrays.asList(
-                                new URIImagemapAction(
-                                        "https://store.line.me/family/manga/en",
-                                        new ImagemapArea(
-                                                0, 0, 520, 520
-                                        )
-                                ),
-                                new URIImagemapAction(
-                                        "https://store.line.me/family/music/en",
-                                        new ImagemapArea(
-                                                520, 0, 520, 520
-                                        )
-                                ),
-                                new URIImagemapAction(
-                                        "https://store.line.me/family/play/en",
-                                        new ImagemapArea(
-                                                0, 520, 520, 520
-                                        )
-                                ),
-                                new MessageImagemapAction(
-                                        "URANAI!",
-                                        new ImagemapArea(
-                                                520, 520, 520, 520
-                                        )
-                                )
-                        )
-                ));
-                break;
-            case "91 To Diamond Hill":{
+            case "91 to diamond hill":{
                 String replyMessage;
                 try {
                     BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
@@ -403,7 +391,7 @@ public class CallbackController {
                 this.replyText(replyToken, replyMessage);
                 break;
             }
-            case "91M To Diamond Hill":{
+            case "91m to diamond hill":{
                 String replyMessage;
                 try {
                     BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
@@ -417,7 +405,7 @@ public class CallbackController {
                 this.replyText(replyToken, replyMessage);
                 break;
             }
-            case "91 To Clear Water Bay":{
+            case "91 to clear water bay":{
                 String replyMessage;
                 try {
                     BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
@@ -431,7 +419,7 @@ public class CallbackController {
                 this.replyText(replyToken, replyMessage);
                 break;
             }
-            case "91M To Po Lam":{
+            case "91m To po lam":{
                 String replyMessage;
                 try {
                     BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
@@ -454,7 +442,7 @@ public class CallbackController {
                 this.reply(replyToken, route91TemplateMessage);
                 break;
             }
-            case "91M":{
+            case "91m":{
                 ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
                         new MessageAction("Diamond Hill", "91M To Diamond Hill"),
                         new MessageAction("Po Lam", "91M To Po Lam")
@@ -473,10 +461,19 @@ public class CallbackController {
                 break;
             }
             default:
-                log.info("Returns echo message {}: {}", replyToken, text);
+                String default_reply ="Which information do you want to know?\n"
+                    +"a) Course information\n"
+                    +"b) Restaurant/Facilities opening hours\n"
+                    +"c) Links suggestions\n"
+                    +"d) Find people\n"
+                    +"e) Lift advisor\n"
+                    +"f) Bus arrival/Departure time\n"
+                    +"g) Deadline list\n"
+                    +"h) Set notifications\n";
+                log.info("Returns  message {}: {}", replyToken, default_reply);
                 this.replyText(
                         replyToken,
-                        text
+                        default_reply
                 );
                 break;
         }
@@ -529,4 +526,12 @@ public class CallbackController {
         Path path;
         String uri;
     }
+    
+	public CallbackController() {
+		database = new SQLDatabaseEngine();
+		
+	}
+
+	private SQLDatabaseEngine database;
+	
 }
