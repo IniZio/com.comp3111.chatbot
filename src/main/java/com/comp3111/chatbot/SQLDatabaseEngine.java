@@ -52,6 +52,45 @@ public class SQLDatabaseEngine {
 	}
 	
 	
+	void storeAction(String id, String text, Action act) throws Exception{
+		
+	} 
+	
+	
+	Action nextAction(String id, String text) throws Exception{
+		Action next= Action.valueOf("MAIN");
+		
+		Connection connection = this.getConnection();
+		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM chatbot");
+		ResultSet rs = stmt.executeQuery();
+		
+		try {
+			
+			String sCurrentLine;
+			while (rs.next()) {
+
+				// To do 
+				
+			}
+		}
+		catch (Exception e) {
+			log.info("Exception while connection: {}", e.toString());
+		}
+		finally {
+			try {
+				rs.close();
+				stmt.close();
+				connection.close();
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}				
+		
+		return next;
+	}
+	
+	
 	private Connection getConnection() throws URISyntaxException, SQLException {
 		Connection connection;
 		URI dbUri = new URI(System.getenv("DATABASE_URL"));
