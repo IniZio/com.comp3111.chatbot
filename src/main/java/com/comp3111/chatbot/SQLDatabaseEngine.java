@@ -58,6 +58,15 @@ public class SQLDatabaseEngine {
 		ResultSet rs = stmt.executeQuery();
 		
 		try {		
+
+			
+			}
+			catch (Exception e) {
+				log.info("Exception while storing: {}", e.toString());
+			}
+		
+		finally {
+		try {		
 			rs.close();
 			stmt.close();
 			connection.close();
@@ -66,7 +75,9 @@ public class SQLDatabaseEngine {
 			catch (Exception e) {
 				log.info("Exception while storing: {}", e.toString());
 			}
+		}
 		}		
+
 	
 	
 	public String[] nextAction(String id) throws Exception{

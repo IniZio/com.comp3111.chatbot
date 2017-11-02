@@ -229,13 +229,7 @@ public class CallbackController {
         String[] next = db.nextAction(userId);
         
         if (next[0].equals("d") && Action.valueOf(next[1]).equals("PEOPLE") ) {
-	    		String reply_people ="Which link do you want to find?\n"
-	    				+"1) Register for a locker\n"
-	        			+"2) Register for courses\n"
-	        			+"3) Check grades\n"
-	        			+"4) Find school calendar\n"
-	        			+"5) Book library rooms\n"
-	        			+"6) Find lecture materials\n";
+	    		String reply_people ="searching...";
 	    		
 	    		this.replyText(
 	                    replyToken,
