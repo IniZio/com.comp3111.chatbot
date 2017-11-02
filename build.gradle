@@ -38,13 +38,10 @@ dependencies {
 	// testCompile('org.springframework.boot:spring-boot-starter-test')
 	
 	
-	compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
+    compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
 }
 
-
-    
-
 test {
-    environment "DATABASE_URL", "postgres://jazesxqewiyfam:a956f70bccc08cf4cb37a483e9c869b555c3dbb7eb4de0b850712e10579094dc@ec2-184-73-189-221.compute-1.amazonaws.com:5432/d8hcmd7u02j0e3" 
+    environment "DATABASE_URL", "postgres://hzexdguaujeemg:0b19b608607d151b840633d94b3a0f8690335aae595344c60bcf6ae0aa439896@ec2-54-221-244-196.compute-1.amazonaws.com:5432/dfsl0jltudjukf" 
 }
 

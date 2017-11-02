@@ -70,7 +70,10 @@ import lombok.extern.slf4j.Slf4j;
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+    // For People
     private static int number = 0;
+    // For OpeningHours
+    private static int tag = 0;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -221,7 +224,9 @@ public class CallbackController {
 
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
+    	
         String text = content.getText();
+        text=text.toLowerCase();        
         
         log.info("Got text message from {}: {}", replyToken, text);
         
@@ -272,8 +277,23 @@ public class CallbackController {
 	        number=0;
 	        return;
         }
-        
-        text=text.toLowerCase();
+ 
+        if(tag == 'b')
+        {
+        	String reply = null;
+        	try {
+        		reply = database.openingHourSearch(text);
+        	} catch (Exception e) {
+        		reply = "Cannot find given facility";
+        	}
+            log.info("Returns echo message {}: {}", replyToken, reply);
+            this.replyText(
+                    replyToken,
+                     reply
+            );
+        }
+
+        String reply = "";
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -446,22 +466,61 @@ public class CallbackController {
                         )
                 ));
                 break;
-             
-            case"d":		//find people
-            		String reply ="Who do you want to find? Please enter his/her full name or ITSC.";
-            		this.replyText(
-                            replyToken,
-                            reply
-                    );
-            		number=1; // get input and search for name
-            		break;
-            
-            default:		
                 
-                log.info("Returns echo message {}: {}", replyToken, text);
+            case "b":		//provide facilities time
+                reply = "Please enter the number in front of the facilities to query the opening hour:\n";
+                try {
+                    reply += database.showFacilitiesChoices();
+                } catch (Exception e) {
+                    reply = "Exception occur";
+                }
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                this.replyText(
+                    replyToken,
+                    reply
+                );
+                tag = 'b';
+                break;
+                    
+            case "c":		// suggestedLinks
+                reply ="Which link do you want to find?\n"
+                +"1) Register for a locker\n"
+                +"2) Register for courses\n"
+                +"3) Check grades\n"
+                +"4) Find school calendar\n"
+                +"5) Book library rooms\n"
+                +"6) Find lecture materials\n";
+                
+                this.replyText(
+                    replyToken,
+                    reply
+                    );
+                    // get input and search for links
+                break;
+            
+            case"d":		//find people
+                reply ="Who do you want to find? Please enter his/her full name or ITSC.";
                 this.replyText(
                         replyToken,
-                        text
+                        reply
+                );
+                number=1; // get input and search for name
+                break;
+                        
+            default:
+                String default_reply ="Which information do you want to know?\n"
+                    +"a) Course information\n"
+                    +"b) Restaurant/Facilities opening hours\n"
+                    +"c) Links suggestions\n"
+                    +"d) Find people\n"
+                    +"e) Lift advisor\n"
+                    +"f) Bus arrival/Departure time\n"
+                    +"g) Deadline list\n"
+                    +"h) Set notifications\n";
+                log.info("Returns  message {}: {}", replyToken, default_reply);
+                this.replyText(
+                        replyToken,
+                        default_reply
                 );
                 break;
         }
@@ -514,4 +573,12 @@ public class CallbackController {
         Path path;
         String uri;
     }
+    
+	public CallbackController() {
+		database = new SQLDatabaseEngine();
+		
+	}
+
+	private SQLDatabaseEngine database;
+	
 }
