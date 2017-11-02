@@ -55,8 +55,7 @@ public class SQLDatabaseEngine {
 	void storeAction(String id, String text, Action act){
 		try {
 			Connection connection = this.getConnection();
-			PreparedStatement stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"
-																+text +"', "+ "'"+act +"' );" );
+			PreparedStatement stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+act +"' );" );
 			ResultSet rs = stmt.executeQuery();
 		
 			rs.close();
@@ -74,7 +73,7 @@ public class SQLDatabaseEngine {
 		Action next= Action.valueOf("MAIN");
 		
 		Connection connection = this.getConnection();
-		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM chatbot");
+		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM mainflow");
 		ResultSet rs = stmt.executeQuery();
 		
 		try {
@@ -82,7 +81,12 @@ public class SQLDatabaseEngine {
 			String sCurrentLine;
 			while (rs.next()) {
 
-				// To do 
+				sCurrentLine = rs.getString(1) + ":" +  rs.getString(2) + rs.getString(3) ;
+				String[] parts = sCurrentLine.split(":");
+				
+				if (id.equals(parts[0])) {
+					next = Action.valueOf(parts[2]);
+				}
 				
 			}
 		}
