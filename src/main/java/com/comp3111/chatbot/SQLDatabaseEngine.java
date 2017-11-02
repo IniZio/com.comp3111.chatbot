@@ -11,7 +11,9 @@ import java.net.URI;
 @Slf4j
 public class SQLDatabaseEngine {
 	
-	 String search(String text) throws Exception {
+	
+	
+	 String openingHourSearch(String text) throws Exception {
 		//Write your code here
 		String result = null;
 		try {
@@ -68,6 +70,8 @@ public class SQLDatabaseEngine {
 		else
 			return "NOT FOUND";
 	}
+	 
+	 
 	
 	
 	private Connection getConnection() throws URISyntaxException, SQLException {

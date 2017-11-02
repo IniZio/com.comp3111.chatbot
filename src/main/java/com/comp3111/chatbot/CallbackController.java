@@ -219,6 +219,7 @@ public class CallbackController {
 
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
+    	
         String text = content.getText();
  
         log.info("Got text message from {}: {}", replyToken, text);
@@ -227,7 +228,7 @@ public class CallbackController {
         {
         	String reply = null;
         	try {
-        		reply = database.search(text);
+        		reply = database.openingHourSearch(text);
         	} catch (Exception e) {
         		reply = "Exception occur";
         	}
