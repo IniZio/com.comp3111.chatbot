@@ -52,12 +52,25 @@ public class SQLDatabaseEngine {
 	}
 	
 	
-	void storeAction(String id, String text, Action act) throws Exception{
+	void storeAction(String id, String text, Action act){
+		try {
+			Connection connection = this.getConnection();
+			PreparedStatement stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"
+																+text +"', "+ "'"+act +"' );" );
+			ResultSet rs = stmt.executeQuery();
 		
-	} 
+			rs.close();
+			stmt.close();
+			connection.close();
+			
+			}
+			catch (Exception e) {
+				log.info("Exception while storing: {}", e.toString());
+			}
+		}		
 	
 	
-	Action nextAction(String id, String text) throws Exception{
+	Action nextAction(String id, String text){
 		Action next= Action.valueOf("MAIN");
 		
 		Connection connection = this.getConnection();
