@@ -81,11 +81,11 @@ public class SQLDatabaseEngine {
 			String sCurrentLine;
 			while (rs.next()) {
 
-				sCurrentLine = rs.getString(1) + ":" +  rs.getString(2) + rs.getString(3) ;
+				sCurrentLine = rs.getString(1) + ":" +  rs.getString(3) ;
 				String[] parts = sCurrentLine.split(":");
 				
 				if (id.equals(parts[0])) {
-					next = Action.valueOf(parts[2]);
+					next = Action.valueOf(parts[1]);
 				}
 				
 			}
