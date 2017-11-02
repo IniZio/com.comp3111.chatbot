@@ -8,7 +8,7 @@ import org.json.*;
 
 public class courseInfoController {
 	
-	static String courseSearch(String text){
+	static String courseSearch(String text, String options){
 		JSONObject obj = new JSONObject("../resources/courses_dict.json");
 		
 		JSONArray courses = obj.getJSONArray(text);

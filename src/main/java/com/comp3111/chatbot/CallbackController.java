@@ -141,9 +141,13 @@ public class CallbackController {
         String pb_data = event.getPostbackContent().getData();
         if (pb_data.contains("course_info_all")) {
             String[] parts = pb_data.split("&");
-            String result = courseInfoController.courseSearch(parts[2]);
+            String result = courseInfoController.courseSearch(parts[2], parts[1]);
             this.replyText(replyToken, result);
-        } else {
+        }
+        else if(pb_data == "no_more"){
+            this.replyText(replyToken, "Sorry, we currently only support displaying these information for you.");
+        } 
+        else {
             this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param "
                     + event.getPostbackContent().getParams().toString());
         }
@@ -206,7 +210,7 @@ public class CallbackController {
         switch (text) {
         case "a":
             this.reply(replyToken, new TextMessage(
-                    "You can directly type the course code to find information about a certain course"));
+                    "You can directly type the course code or questions like \"I want to know more about course COMP3111\"to find information about a certain course"));
             break;
         case "profile": {
             String userId = event.getSource().getUserId();
@@ -242,13 +246,15 @@ public class CallbackController {
                      replyToken,
                      text
              );*/
-            if (text.matches("^([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?$")) {
+            if (text.matches("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?")) {            
                 ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null,
-                        "What part you want to know about the course " + text + "?", "Options:",
-                        Arrays.asList(new PostbackAction("All", "course_info_all&" + text),
-                                new MessageAction("Any More?",
-                                        "Sorry, we currently only support displaying these information for you.")));
-                TemplateMessage templateMessage = new TemplateMessage("Course Information Selecter", buttonsTemplate);
+                        "Course " + text, "What do you want to do about the course?",
+                        Arrays.asList(
+                            new MessageAction("Overview", "Course Overview for" + text),
+                            new MessageAction("Pre-requisites", "Pre-requisites of" + text),
+                            new MessageAction("Schedule", "Schedules for" + text)));
+                TemplateMessage templateMessage = new TemplateMessage("It seems that you are selecting course "+text+", but content is not viewable on desktop.", buttonsTemplate);
+                log.info("Returns  message {}: {}", replyToken, text);
                 this.reply(replyToken, templateMessage);
             } else {
                 String default_reply = "Which information do you want to know?\n" + "a) Course information\n"
