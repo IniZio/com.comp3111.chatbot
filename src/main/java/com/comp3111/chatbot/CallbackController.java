@@ -69,6 +69,7 @@ public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
 
+
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
         TextMessageContent message = event.getMessage();
@@ -221,6 +222,21 @@ public class CallbackController {
         String text = content.getText();
 
         log.info("Got text message from {}: {}", replyToken, text);
+        
+        String userId = event.getSource().getUserId();			// store the input of user in database
+        SQLDatabaseEngine db = new SQLDatabaseEngine();
+        Action next = db.nextAction(userId);
+        
+        if (next == Action.PEOPLE_ITSC_INPUT) {
+        	String reply3 ="searching";
+    		
+        		this.replyText(
+                        replyToken,
+                        reply3
+                );        	
+        		return;
+        }
+
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -393,6 +409,19 @@ public class CallbackController {
                         )
                 ));
                 break;
+                
+            case "d":
+            	String reply1 ="find who?";
+        		
+	        		this.replyText(
+	                        replyToken,
+	                        reply1
+	                );
+                //String userId = event.getSource().getUserId();			// store the input of user in database
+                //SQLDatabaseEngine db = new SQLDatabaseEngine();
+                db. storeAction(userId, text,Action.PEOPLE_ITSC_INPUT);   
+            	
+            		break;
                 
             case "c":		// suggestedLinks
 	        		String reply ="Which link do you want to find?\n"
