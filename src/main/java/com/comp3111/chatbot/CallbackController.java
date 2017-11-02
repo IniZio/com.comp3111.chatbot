@@ -230,7 +230,7 @@ public class CallbackController {
         	try {
         		reply = database.openingHourSearch(text);
         	} catch (Exception e) {
-        		reply = "Exception occur";
+        		reply = "Cannot find given facility";
         	}
             log.info("Returns echo message {}: {}", replyToken, reply);
             this.replyText(
