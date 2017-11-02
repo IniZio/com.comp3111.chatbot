@@ -236,7 +236,9 @@ public class CallbackController {
 	        	results.append("Search Result(s):");
 	        	
 	        if (resultList ==null) {
-	        		results.append("\nNot found.");
+                    results.append("\nNot found.");
+                    this.replyText(replyToken, results.toString());
+                    return;
 	        }
 	        else{
 		        	for (people p : resultList){
