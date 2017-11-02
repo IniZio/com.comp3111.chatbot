@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import com.linecorp.bot.model.action.DatetimePickerAction;
+import com.linecorp.bot.model.action.*;
 import com.linecorp.bot.model.message.template.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,9 +25,6 @@ import com.google.common.io.ByteStreams;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.MessageContentResponse;
 import com.linecorp.bot.model.ReplyMessage;
-import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.action.PostbackAction;
-import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.BeaconEvent;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.FollowEvent;
@@ -64,6 +61,8 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+
+import com.comp3111.chatbot.BusETARequestHandler;
 
 @Slf4j
 @LineMessageHandler
@@ -198,7 +197,7 @@ public class CallbackController {
             throw new IllegalArgumentException("replyToken must not be empty");
         }
         if (message.length() > 1000) {
-            message = message.substring(0, 1000 - 2) + "……";
+            message = message.substring(0, 1000 - 2) + "�色��";
         }
         this.reply(replyToken, new TextMessage(message));
     }
@@ -378,7 +377,89 @@ public class CallbackController {
                 );
                 number=1; // get input and search for name
                 break;
-                        
+            case "91 to diamond hill":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
+            case "91m to diamond hill":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
+            case "91 to clear water bay":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
+            case "91m To po lam":{
+                String replyMessage;
+                try {
+                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
+                    String results = "";
+                    results = results + "Time: ";
+                    results = results + busETARequestHandler.getReplyMessage();
+                    replyMessage = results;
+                } catch (Exception e){
+                    replyMessage = "error";
+                }
+                this.replyText(replyToken, replyMessage);
+                break;
+            }
+            case "91":{
+                ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
+                        new MessageAction("Diamond Hill", "91 To Diamond Hill"),
+                        new MessageAction("Clear Water Bay", "91 To Clear Water Bay")
+                );
+                TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in 91 To Diamond Hill or 91 To Clear Water Bay", route91ConfirmTemplate);
+                this.reply(replyToken, route91TemplateMessage);
+                break;
+            }
+            case "91m":{
+                ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
+                        new MessageAction("Diamond Hill", "91M To Diamond Hill"),
+                        new MessageAction("Po Lam", "91M To Po Lam")
+                );
+                TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in 91M To Diamond Hill or 91M To Po Lam", route91MConfirmTemplate);
+                this.reply(replyToken, route91MTemplateMessage);
+                break;
+            }
+            case "bus":{
+                ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
+                        new MessageAction("91", "91"),
+                        new MessageAction("91M", "91M")
+                        );
+                TemplateMessage busTemplateMessage = new TemplateMessage("Please type in  91 or 91M", busConfirmTemplate);
+                this.reply(replyToken, busTemplateMessage);
+                break;
+            }
             default:
                 String default_reply ="Which information do you want to know?\n"
                     +"a) Course information\n"
