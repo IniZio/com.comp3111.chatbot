@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import com.linecorp.bot.model.action.DatetimePickerAction;
 import com.linecorp.bot.model.message.template.*;
@@ -138,19 +140,8 @@ public class CallbackController {
     @EventMapping
     public void handlePostbackEvent(PostbackEvent event) {
         String replyToken = event.getReplyToken();
-        String pb_data = event.getPostbackContent().getData();
-        if (pb_data.contains("course_info_all")) {
-            String[] parts = pb_data.split("&");
-            String result = courseInfoController.courseSearch(parts[2], parts[1]);
-            this.replyText(replyToken, result);
-        }
-        else if(pb_data == "no_more"){
-            this.replyText(replyToken, "Sorry, we currently only support displaying these information for you.");
-        } 
-        else {
-            this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param "
-                    + event.getPostbackContent().getParams().toString());
-        }
+        this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param "
+                + event.getPostbackContent().getParams().toString());
     }
 
     @EventMapping
@@ -246,16 +237,34 @@ public class CallbackController {
                      replyToken,
                      text
              );*/
-            if (text.matches("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?")) {            
-                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null,
-                        "Course " + text, "What do you want to do about the course?",
-                        Arrays.asList(
-                            new MessageAction("Overview", "Course Overview for" + text),
-                            new MessageAction("Pre-requisites", "Pre-requisites of" + text),
-                            new MessageAction("Schedule", "Schedules for" + text)));
-                TemplateMessage templateMessage = new TemplateMessage("It seems that you are selecting course "+text+", but content is not viewable on desktop.", buttonsTemplate);
-                log.info("Returns  message {}: {}", replyToken, text);
-                this.reply(replyToken, templateMessage);
+            if (text.matches("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?")) {
+                text = text.toLowerCase();
+                final Pattern pattern = Pattern.compile("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?");
+                final Matcher matcher = pattern.matcher(text);
+                matcher.find();
+                String co_name = matcher.group(1);
+                if (text.contains("overview")) {
+                    String result = courseInfoController.courseSearch(co_name, "ov");
+                } else if (text.contains("pre-requisites") || text.contains("prerequisites")) {
+                    String result = courseInfoController.courseSearch(co_name, "pr");
+                } else if (text.contains("schedule") || text.contains("time")) {
+                    String result = courseInfoController.courseSearch(co_name, "sch");
+                } else {
+                    co_name = text.toUpperCase();
+                    ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Course " + co_name,
+                            "What do you want to do?",
+                            Arrays.asList(new MessageAction("Overview", "Course Overview for " + co_name),
+                                    new MessageAction("Pre-requisites", "Pre-requisites of " + co_name),
+                                    new MessageAction("Schedules", "Schedules for " + co_name)));
+                    TemplateMessage templateMessage = new TemplateMessage("--------- Course " + co_name
+                            + "---------\n What do you Want to know about?\n\n Use " + co_name
+                            + " with following keywords to find out:\nOverview)Course Overview for " + co_name
+                            + "\nPre-requisites) Pre-requisites of " + co_name + "\nSchedules)Schedules for " + co_name
+                            + "\n\nNOTE:\nInteractive interface is disabled in desktop client. If you want to use interactive interface, please take following actions:",
+                            buttonsTemplate);
+                    log.info("Returns  message {}: {}", replyToken, text);
+                    this.reply(replyToken, templateMessage);
+                }
             } else {
                 String default_reply = "Which information do you want to know?\n" + "a) Course information\n"
                         + "b) Restaurant/Facilities opening hours\n" + "c) Links suggestions\n" + "d) Find people\n"
