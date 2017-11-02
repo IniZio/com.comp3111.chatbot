@@ -223,20 +223,10 @@ public class CallbackController {
 
         log.info("Got text message from {}: {}", replyToken, text);
         
-        String userId = event.getSource().getUserId();			// store the input of user in database
+        String userId = event.getSource().getUserId();			
         SQLDatabaseEngine db = new SQLDatabaseEngine();
-        Action next = db.nextAction(userId);
+        String[] next = db.nextAction(userId);
         
-        if (next == Action.PEOPLE_ITSC_INPUT) {
-        	String reply3 ="searching";
-    		
-        		this.replyText(
-                        replyToken,
-                        reply3
-                );        	
-        		return;
-        }
-
         switch (text) {
             case "profile": {
                 //String userId = event.getSource().getUserId();
@@ -419,7 +409,7 @@ public class CallbackController {
 	                );
                 //String userId = event.getSource().getUserId();			// store the input of user in database
                 //SQLDatabaseEngine db = new SQLDatabaseEngine();
-                db. storeAction(userId, text,Action.PEOPLE_ITSC_INPUT);   
+                db. storeAction(userId, text,Action.PEOPLE);   
             	
             		break;
                 

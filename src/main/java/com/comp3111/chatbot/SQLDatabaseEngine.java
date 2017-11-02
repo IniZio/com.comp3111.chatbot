@@ -69,8 +69,8 @@ public class SQLDatabaseEngine {
 		}		
 	
 	
-	public Action nextAction(String id) throws Exception{
-		Action next= Action.valueOf("MAIN");
+	public String[] nextAction(String id) throws Exception{
+		String[] next= new String [2];
 		
 		Connection connection = this.getConnection();
 		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM mainflow");
@@ -81,11 +81,12 @@ public class SQLDatabaseEngine {
 			String sCurrentLine;
 			while (rs.next()) {
 
-				sCurrentLine = rs.getString(1) + ":" +  rs.getString(3) ;
+				sCurrentLine = rs.getString(1) + ":" + rs.getString(2) +":"+ rs.getString(3) ;
 				String[] parts = sCurrentLine.split(":");
 				
 				if (id.equals(parts[0])) {
-					next = Action.valueOf(parts[1]);
+					next[0] = parts[1];
+					next[1] = Action.valueOf(parts[2]).name();
 				}
 				
 			}
