@@ -74,7 +74,6 @@ public class CallbackController {
     // For OpeningHours
     private static int tag = 0;
 
-
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
         TextMessageContent message = event.getMessage();
@@ -222,6 +221,69 @@ public class CallbackController {
         );
     }
 
+    private Boolean handleAction(String userId, String replyToken, String action, String text, SQLDatabaseEngine db)
+        throws Exception
+    {
+        try {
+            switch (action) {
+                case ACTION.PEOPLE_INPUT: {
+                    String reply ="Who do you want to find? Please enter his/her full name or ITSC.";
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.PEOPLE_SEARCH);
+                    break;
+                }
+                case ACTION.PEOPLE_SEARCH: {
+                    String replyPeople;
+                    
+                    URLConnectionReader search = new URLConnectionReader();
+                    PeopleList result=search.SearchPeople(text);
+                    ArrayList<people> resultList = result.getList();
+                        
+                    StringBuilder results = new StringBuilder();
+                    results.append("Search Result(s):");
+                        
+                    if (resultList ==null) {
+                        results.append("\nNot found.");
+                        this.replyText(replyToken, results.toString());
+                        break;
+                    }
+                    else{
+                        for (people p : resultList){
+                            results.append(
+                                String.format("\nTitle: %s\nName: %s\nEmail: %s\nPhone: %s\nDepartment: %s\nRoom: %s",
+                                    p.getTitle(),
+                                    p.getName(),
+                                    p.getEmail(),
+                                    p.getPhone(),
+                                    p.getDepartment(),
+                                    p.getRoom()
+                                )
+                            );
+                        }
+                    }
+                    
+                    if (PeopleList.too_many==true) {
+                        results.append("Too many results...");
+                    }
+                    replyPeople = results.toString();
+                    this.replyText(replyToken, replyPeople);
+                    db.storeAction(userId, text, ACTION.MAIN);
+                    break;
+                }
+                case ACTION.MAIN: {
+                    // TODO: print main menu
+                    break;
+                }
+                default: {
+                    return false;
+                }
+            }
+        } catch (Exception e) {
+            log.info(e.toString());
+        }
+        return true;
+    }
+
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
     	
@@ -230,103 +292,102 @@ public class CallbackController {
         
         log.info("Got text message from {}: {}", replyToken, text);
 
-        // Store as next action
+        // 1. Check for stored next action...
         String userId = event.getSource().getUserId();			
         SQLDatabaseEngine db = new SQLDatabaseEngine();
-        String[] next = db.nextAction(userId);
-        
-        if (next[0].equals("d") && Action.valueOf(next[1]).equals("PEOPLE") ) {
-	    		String reply_people ="searching...";
-	    		
-	    		this.replyText(
-	                    replyToken,
-	                    reply_people
-	            );
-	    		db. storeAction(userId, text,Action.MAIN);
-	    		return;
+        String[] curr = db.nextAction(userId);
+        String action = curr[1];
+
+        // ... then handle action if has history in database and is not reset to homepage
+        if (action != null && !action.equals(ACTION.MAIN)) {
+            log.info("Next action: {}", action);
+
+            // Leave if the action is done
+            if (handleAction(userId, replyToken, action, text, db))
+                return;
         }
 
-
+        // 2. If no matching previous action, use partial matching on the input
         // For lift advisor
-        if (text.contains("room") || text.contains("rm")){
-            String replyMessage;
-            try {
-                LiftAdvisor liftAdvisor = new LiftAdvisor(text);
-                if (liftAdvisor.noRoomNumberDetected()){
-                    replyMessage = "No room number detected. Please enter number along with keyword room or rm";
-                    this.replyText(replyToken, replyMessage);
-                    return;
-                }
-                replyMessage = liftAdvisor.getReplyMessage();
-            }catch (Exception e){
-                replyMessage = "error";
-            }
-            this.replyText(replyToken, replyMessage);
-            return;
-        }
+        // if (text.contains("room") || text.contains("rm")){
+        //     String replyMessage;
+        //     try {
+        //         LiftAdvisor liftAdvisor = new LiftAdvisor(text);
+        //         if (liftAdvisor.noRoomNumberDetected()){
+        //             replyMessage = "No room number detected. Please enter number along with keyword room or rm";
+        //             this.replyText(replyToken, replyMessage);
+        //             return;
+        //         }
+        //         replyMessage = liftAdvisor.getReplyMessage();
+        //     }catch (Exception e){
+        //         replyMessage = "error";
+        //     }
+        //     this.replyText(replyToken, replyMessage);
+        //     return;
+        // }
         
-        if (number==1) {			// for finding people
-        		String replyPeople;
+        // if (number==1) {			// for finding people
+        // 		String replyPeople;
         	
-	        URLConnectionReader search = new URLConnectionReader();
-	        	PeopleList result=search.SearchPeople(text);
-	        ArrayList<people> resultList = result.getList();
+	    //     URLConnectionReader search = new URLConnectionReader();
+	    //     	PeopleList result=search.SearchPeople(text);
+	    //     ArrayList<people> resultList = result.getList();
 	        	
-	        	StringBuilder results = new StringBuilder();
-	        	results.append("Search Result(s):");
+	    //     	StringBuilder results = new StringBuilder();
+	    //     	results.append("Search Result(s):");
 	        	
-	        if (resultList ==null) {
-                    results.append("\nNot found.");
-                    this.replyText(replyToken, results.toString());
-                    return;
-	        }
-	        else{
-		        	for (people p : resultList){
-		        		results.append("\n");
-		        		results.append("Title: ");
-		        		results.append(p.getTitle());
-		        		results.append("\n");
-		        		results.append("Name: ");
-		        		results.append(p.getName());
-		        		results.append("\n");
-		        		results.append("Email: ");
-		        		results.append(p.getEmail());
-		        		results.append("\n");
-		        		results.append("Phone: ");
-		        		results.append(p.getPhone());
-		        		results.append("\n");
-		        		results.append("Department: ");
-		        		results.append(p.getDepartment());
-		        		results.append("\n");
-		        		results.append("Room: ");
-		        		results.append(p.getRoom());
-		        		results.append("\n");
-		    		}
-	        }
+	    //     if (resultList ==null) {
+        //             results.append("\nNot found.");
+        //             this.replyText(replyToken, results.toString());
+        //             return;
+	    //     }
+	    //     else{
+		//         	for (people p : resultList){
+		//         		results.append("\n");
+		//         		results.append("Title: ");
+		//         		results.append(p.getTitle());
+		//         		results.append("\n");
+		//         		results.append("Name: ");
+		//         		results.append(p.getName());
+		//         		results.append("\n");
+		//         		results.append("Email: ");
+		//         		results.append(p.getEmail());
+		//         		results.append("\n");
+		//         		results.append("Phone: ");
+		//         		results.append(p.getPhone());
+		//         		results.append("\n");
+		//         		results.append("Department: ");
+		//         		results.append(p.getDepartment());
+		//         		results.append("\n");
+		//         		results.append("Room: ");
+		//         		results.append(p.getRoom());
+		//         		results.append("\n");
+		//     		}
+	    //     }
 	        
-	        if (PeopleList.too_many==true) {
-	        		results.append("Too many results...");
-	        }
-	        replyPeople = results.toString();
-	        this.replyText(replyToken, replyPeople);
-	        number=0;
-	        return;
-        }
+	    //     if (PeopleList.too_many==true) {
+	    //     		results.append("Too many results...");
+	    //     }
+	    //     replyPeople = results.toString();
+	    //     this.replyText(replyToken, replyPeople);
+	    //     number=0;
+	    //     return;
+        // }
  
-        if(tag == 'b')
-        {
-        	String reply = null;
-        	try {
-        		reply = database.openingHourSearch(text);
-        	} catch (Exception e) {
-        		reply = "Cannot find given facility";
-        	}
-            log.info("Returns echo message {}: {}", replyToken, reply);
-            this.replyText(
-                    replyToken,
-                     reply
-            );
-        }
+        // if(tag == 'b')
+        // {
+        // 	String reply = null;
+        // 	try {
+        // 		reply = database.openingHourSearch(text);
+        // 	} catch (Exception e) {
+        // 		reply = "Cannot find given facility";
+        // 	}
+        //     log.info("Returns echo message {}: {}", replyToken, reply);
+        //     this.replyText(
+        //             replyToken,
+        //              reply
+        //     );
+        // }
 
         String reply = "";
         switch (text) {
@@ -387,14 +448,9 @@ public class CallbackController {
                     // get input and search for links
                 break;
             
-            case"d":		//find people
-                reply ="Who do you want to find? Please enter his/her full name or ITSC.";
-                this.replyText(
-                        replyToken,
-                        reply
-                );
-                number=1; // get input and search for name
-                db. storeAction(userId, text,Action.PEOPLE);  
+            case "d":		//find people
+                try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
+                handleAction(userId, replyToken, action, text, db);
                 break;
             case "91 to diamond hill":{
                 String replyMessage;
