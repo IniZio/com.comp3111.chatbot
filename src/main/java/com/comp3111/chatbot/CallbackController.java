@@ -410,6 +410,7 @@ public class CallbackController {
                         )
                 ));
                 break;
+
             case "b":		//provide facilities time
             	String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
             	try {
@@ -424,26 +425,24 @@ public class CallbackController {
                 );
         		tag = 'b';
         		break;
+                
+            case "c":		// suggestedLinks
+	        		String reply ="Which link do you want to find?\n"
+	        				+"1) Register for a locker\n"
+                			+"2) Register for courses\n"
+                			+"3) Check grades\n"
+                			+"4) Find school calendar\n"
+                			+"5) Book library rooms\n"
+                			+"6) Find lecture materials\n";
+	        		
+	        		this.replyText(
+	                        replyToken,
+	                        reply
+	                );
+	        					// get input and search for links
+	        		break;
+            		
             default:
-            	/*
-                log.info("Returns echo message {}: {}", replyToken, text);
-                this.replyText(
-                        replyToken,
-                        text
-                );
-                break;*/
-            	/*String reply = null;
-            	try {
-            		reply = database.search(text);
-            	} catch (Exception e) {
-            		reply = "Exception occur";
-            	}
-                log.info("Returns echo message {}: {}", replyToken, reply);
-                this.replyText(
-                        replyToken,
-                        " says " + reply
-                );
-                break;*/
                 String default_reply ="Which information do you want to know?\n"
             			+"a) Course information\n"
             			+"b) Restaurant/Facilities opening hours\n"
@@ -451,14 +450,14 @@ public class CallbackController {
             			+"d) Find people\n"
             			+"e) Lift advisor\n"
             			+"f) Bus arrival/Departure time\n"
-            			+"g) Deadline list\n";
+            			+"g) Deadline list\n"
+            			+"h) Set notifications\n";
             log.info("Returns  message {}: {}", replyToken, default_reply);
             this.replyText(
                     replyToken,
                     default_reply
             );
             break;
-
         }
     }
 

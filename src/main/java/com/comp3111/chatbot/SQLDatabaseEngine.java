@@ -5,14 +5,13 @@ import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.net.URISyntaxException;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 
 @Slf4j
 public class SQLDatabaseEngine {
-	
-	
-	
 	 String openingHourSearch(String text) throws Exception {
 		//Write your code here
 		String result = null;
@@ -70,9 +69,6 @@ public class SQLDatabaseEngine {
 		else
 			return "NOT FOUND";
 	}
-	 
-	 
-	
 	
 	private Connection getConnection() throws URISyntaxException, SQLException {
 		Connection connection;
@@ -89,5 +85,4 @@ public class SQLDatabaseEngine {
 
 		return connection;
 	}
-
 }
