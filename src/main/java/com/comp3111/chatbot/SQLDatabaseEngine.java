@@ -12,45 +12,63 @@ import java.net.URI;
 
 @Slf4j
 public class SQLDatabaseEngine {
-	
-	String searchSuggestedLinks(String text) throws Exception {
-		//Write your code here...
+	 String openingHourSearch(String text) throws Exception {
+		//Write your code here
 		String result = null;
-		
-		Connection connection = this.getConnection();
-		PreparedStatement stmt = connection.prepareStatement("SELECT * FROM chatbot");
-		ResultSet rs = stmt.executeQuery();
-		
 		try {
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+					"SELECT * FROM facilities WHERE index=?");
+			int n = Integer.parseInt(text);
+			stmt.setInt(1, n);
+			ResultSet rs = stmt.executeQuery();
+			rs.next();
+			result = "The opening hour of " + rs.getString(2) + "is:" + rs.getString(4);
 			
-			String sCurrentLine;
-			while (rs.next()) {
+			rs.close();
+			stmt.close();
+			connection.close();
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException: ", e2.toString());
+		}
 
-				// To do 
-				
-			}
-		}
-		catch (Exception e) {
-			log.info("Exception while connection: {}", e.toString());
-		}
-		finally {
-			try {
-				rs.close();
-				stmt.close();
-				connection.close();
-			}
-			catch (Exception e) {
-				log.info("Exception while disconnection: {}", e.toString());
-			}
-		}
-		
-		if (result != null)
+		if(result!=null)
 			return result;
-		
 		throw new Exception("NOT FOUND");
-	
 	}
-	
+	 
+	 String showFacilitiesChoices() throws Exception {
+		//Write your code here
+		String result = null;
+		try {
+			Connection connection = getConnection();
+			PreparedStatement stmt = connection.prepareStatement(
+					"SELECT * FROM facilities");
+			ResultSet rs = stmt.executeQuery();
+			while(rs.next())
+			{
+				if(result == null)
+					result = rs.getInt(1) + ". " + rs.getString(2) + "\n";
+				else
+					result += rs.getInt(1) + ". " + rs.getString(2) + "\n";
+			}
+			
+			rs.close();
+			stmt.close();
+			connection.close();
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException: ", e2.toString());
+		}
+
+		if(result!=null)
+			return result;
+		else
+			return "NOT FOUND";
+	}
 	
 	private Connection getConnection() throws URISyntaxException, SQLException {
 		Connection connection;
@@ -67,5 +85,4 @@ public class SQLDatabaseEngine {
 
 		return connection;
 	}
-
 }

@@ -68,6 +68,7 @@ import lombok.extern.slf4j.Slf4j;
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
+    private static int tag = 0;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -218,9 +219,25 @@ public class CallbackController {
 
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
+    	
         String text = content.getText();
-
+ 
         log.info("Got text message from {}: {}", replyToken, text);
+        
+        if(tag == 'b')
+        {
+        	String reply = null;
+        	try {
+        		reply = database.openingHourSearch(text);
+        	} catch (Exception e) {
+        		reply = "Cannot find given facility";
+        	}
+            log.info("Returns echo message {}: {}", replyToken, reply);
+            this.replyText(
+                    replyToken,
+                     reply
+            );
+        }
         switch (text) {
             case "profile": {
                 String userId = event.getSource().getUserId();
@@ -393,6 +410,21 @@ public class CallbackController {
                         )
                 ));
                 break;
+
+            case "b":		//provide facilities time
+            	String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
+            	try {
+            		reply += database.showFacilitiesChoices();
+            	} catch (Exception e) {
+            		reply = "Exception occur";
+            	}
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                this.replyText(
+                        replyToken,
+                          reply
+                );
+        		tag = 'b';
+        		break;
                 
             case "c":		// suggestedLinks
 	        		String reply ="Which link do you want to find?\n"
@@ -476,4 +508,12 @@ public class CallbackController {
         Path path;
         String uri;
     }
+    
+	public CallbackController() {
+		database = new SQLDatabaseEngine();
+		
+	}
+
+	private SQLDatabaseEngine database;
+	
 }
