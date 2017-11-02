@@ -227,6 +227,23 @@ public class CallbackController {
         SQLDatabaseEngine db = new SQLDatabaseEngine();
         String[] next = db.nextAction(userId);
         
+        if (next[0].equals("d") && Action.valueOf(next[1]).equals("PEOPLE") ) {
+	    		String reply_people ="Which link do you want to find?\n"
+	    				+"1) Register for a locker\n"
+	        			+"2) Register for courses\n"
+	        			+"3) Check grades\n"
+	        			+"4) Find school calendar\n"
+	        			+"5) Book library rooms\n"
+	        			+"6) Find lecture materials\n";
+	    		
+	    		this.replyText(
+	                    replyToken,
+	                    reply_people
+	            );
+	    		db. storeAction(userId, text,Action.MAIN);
+    		return;
+        }
+        
         switch (text) {
             case "profile": {
                 //String userId = event.getSource().getUserId();
@@ -407,8 +424,7 @@ public class CallbackController {
 	                        replyToken,
 	                        reply1
 	                );
-                //String userId = event.getSource().getUserId();			// store the input of user in database
-                //SQLDatabaseEngine db = new SQLDatabaseEngine();
+
                 db. storeAction(userId, text,Action.PEOPLE);   
             	
             		break;
@@ -444,6 +460,7 @@ public class CallbackController {
                     replyToken,
                     default_reply
             );
+            db. storeAction(userId, text,Action.MAIN);   
             break;
         }
     }
