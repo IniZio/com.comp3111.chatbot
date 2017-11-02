@@ -84,59 +84,38 @@ public class CallbackController {
     @EventMapping
     public void handleLocationMessageEvent(MessageEvent<LocationMessageContent> event) {
         LocationMessageContent locationMessage = event.getMessage();
-        reply(event.getReplyToken(), new LocationMessage(
-                locationMessage.getTitle(),
-                locationMessage.getAddress(),
-                locationMessage.getLatitude(),
-                locationMessage.getLongitude()
-        ));
+        reply(event.getReplyToken(), new LocationMessage(locationMessage.getTitle(), locationMessage.getAddress(),
+                locationMessage.getLatitude(), locationMessage.getLongitude()));
     }
 
     @EventMapping
     public void handleImageMessageEvent(MessageEvent<ImageMessageContent> event) throws IOException {
         // You need to install ImageMagick
-        handleHeavyContent(
-                event.getReplyToken(),
-                event.getMessage().getId(),
-                responseBody -> {
-                    DownloadedContent jpg = saveContent("jpg", responseBody);
-                    DownloadedContent previewImg = createTempFile("jpg");
-                    system(
-                            "convert",
-                            "-resize", "240x",
-                            jpg.path.toString(),
-                            previewImg.path.toString());
-                    reply(((MessageEvent) event).getReplyToken(),
-                          new ImageMessage(jpg.getUri(), jpg.getUri()));
-                });
+        handleHeavyContent(event.getReplyToken(), event.getMessage().getId(), responseBody -> {
+            DownloadedContent jpg = saveContent("jpg", responseBody);
+            DownloadedContent previewImg = createTempFile("jpg");
+            system("convert", "-resize", "240x", jpg.path.toString(), previewImg.path.toString());
+            reply(((MessageEvent) event).getReplyToken(), new ImageMessage(jpg.getUri(), jpg.getUri()));
+        });
     }
 
     @EventMapping
     public void handleAudioMessageEvent(MessageEvent<AudioMessageContent> event) throws IOException {
-        handleHeavyContent(
-                event.getReplyToken(),
-                event.getMessage().getId(),
-                responseBody -> {
-                    DownloadedContent mp4 = saveContent("mp4", responseBody);
-                    reply(event.getReplyToken(), new AudioMessage(mp4.getUri(), 100));
-                });
+        handleHeavyContent(event.getReplyToken(), event.getMessage().getId(), responseBody -> {
+            DownloadedContent mp4 = saveContent("mp4", responseBody);
+            reply(event.getReplyToken(), new AudioMessage(mp4.getUri(), 100));
+        });
     }
 
     @EventMapping
     public void handleVideoMessageEvent(MessageEvent<VideoMessageContent> event) throws IOException {
         // You need to install ffmpeg and ImageMagick.
-        handleHeavyContent(
-                event.getReplyToken(),
-                event.getMessage().getId(),
-                responseBody -> {
-                    DownloadedContent mp4 = saveContent("mp4", responseBody);
-                    DownloadedContent previewImg = createTempFile("jpg");
-                    system("convert",
-                           mp4.path + "[0]",
-                           previewImg.path.toString());
-                    reply(((MessageEvent) event).getReplyToken(),
-                          new VideoMessage(mp4.getUri(), previewImg.uri));
-                });
+        handleHeavyContent(event.getReplyToken(), event.getMessage().getId(), responseBody -> {
+            DownloadedContent mp4 = saveContent("mp4", responseBody);
+            DownloadedContent previewImg = createTempFile("jpg");
+            system("convert", mp4.path + "[0]", previewImg.path.toString());
+            reply(((MessageEvent) event).getReplyToken(), new VideoMessage(mp4.getUri(), previewImg.uri));
+        });
     }
 
     @EventMapping
@@ -160,14 +139,14 @@ public class CallbackController {
     public void handlePostbackEvent(PostbackEvent event) {
         String replyToken = event.getReplyToken();
         String pb_data = event.getPostbackContent().getData();
-        if( pb_data.contains("course_info_all")){
+        if (pb_data.contains("course_info_all")) {
             String[] parts = pb_data.split("&");
             String result = courseInfoController.courseSearch(parts[2]);
             this.replyText(replyToken, result);
+        } else {
+            this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param "
+                    + event.getPostbackContent().getParams().toString());
         }
-        else{
-            this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param " + event.getPostbackContent().getParams().toString());
-    }
     }
 
     @EventMapping
@@ -187,9 +166,7 @@ public class CallbackController {
 
     private void reply(@NonNull String replyToken, @NonNull List<Message> messages) {
         try {
-            BotApiResponse apiResponse = lineMessagingClient
-                    .replyMessage(new ReplyMessage(replyToken, messages))
-                    .get();
+            BotApiResponse apiResponse = lineMessagingClient.replyMessage(new ReplyMessage(replyToken, messages)).get();
             log.info("Sent messages: {}", apiResponse);
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
@@ -207,11 +184,10 @@ public class CallbackController {
     }
 
     private void handleHeavyContent(String replyToken, String messageId,
-                                    Consumer<MessageContentResponse> messageConsumer) {
+            Consumer<MessageContentResponse> messageConsumer) {
         final MessageContentResponse response;
         try {
-            response = lineMessagingClient.getMessageContent(messageId)
-                                          .get();
+            response = lineMessagingClient.getMessageContent(messageId).get();
         } catch (InterruptedException | ExecutionException e) {
             reply(replyToken, new TextMessage("Cannot get image: " + e.getMessage()));
             throw new RuntimeException(e);
@@ -220,77 +196,74 @@ public class CallbackController {
     }
 
     private void handleSticker(String replyToken, StickerMessageContent content) {
-        reply(replyToken, new StickerMessage(
-                content.getPackageId(), content.getStickerId())
-        );
+        reply(replyToken, new StickerMessage(content.getPackageId(), content.getStickerId()));
     }
 
-    private void handleTextContent(String replyToken, Event event, TextMessageContent content)
-            throws Exception {
+    private void handleTextContent(String replyToken, Event event, TextMessageContent content) throws Exception {
         String text = content.getText();
-        
-        
-        
-        
+
         log.info("Got text message from {}: {}", replyToken, text);
         switch (text) {
-            case "a": 
-            this.reply(replyToken,new TextMessage("You can directly type the course code to find information about a certain course"));
+        case "a":
+            this.reply(replyToken, new TextMessage(
+                    "You can directly type the course code to find information about a certain course"));
             break;
-            case "profile": {
-                String userId = event.getSource().getUserId();
-                if (userId != null) {
-                    lineMessagingClient
-                            .getProfile(userId)
-                            .whenComplete((profile, throwable) -> {
-                                if (throwable != null) {
-                                    this.replyText(replyToken, throwable.getMessage());
-                                    return;
-                                }
+        case "profile": {
+            String userId = event.getSource().getUserId();
+            if (userId != null) {
+                lineMessagingClient.getProfile(userId).whenComplete((profile, throwable) -> {
+                    if (throwable != null) {
+                        this.replyText(replyToken, throwable.getMessage());
+                        return;
+                    }
 
-                                this.reply(
-                                        replyToken,
-                                        Arrays.asList(new TextMessage(
-                                                              "Display name: " + profile.getDisplayName()),
-                                                      new TextMessage("Status message: "
-                                                                      + profile.getStatusMessage()))
-                                );
+                    this.reply(replyToken, Arrays.asList(new TextMessage("Display name: " + profile.getDisplayName()),
+                            new TextMessage("Status message: " + profile.getStatusMessage())));
 
-                            });
-                } else {
-                    this.replyText(replyToken, "Bot can't use profile API without user ID");
-                }
-                break;
+                });
+            } else {
+                this.replyText(replyToken, "Bot can't use profile API without user ID");
             }
+            break;
+        }
 
-            default:
-               /* log.info("Returns echo message {}: {}", replyToken, text);
-                this.replyText(
-                        replyToken,
-                        text
-                );*/
-                if(text.matches("^([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?$")){
-                    ButtonsTemplate buttonsTemplate = new ButtonsTemplate(
-                        null,
-                        "What part you want to know about the course "+text+"?",
-                        "Options:",
-                        Arrays.asList(
-                                new PostbackAction("All",
-                                                   "course_info_all&"+text),
+        case "c": // suggestedLinks
+            String reply = "Which link do you want to find?\n" + "1) Register for a locker\n"
+                    + "2) Register for courses\n" + "3) Check grades\n" + "4) Find school calendar\n"
+                    + "5) Book library rooms\n" + "6) Find lecture materials\n";
+
+            this.replyText(replyToken, reply);
+            // get input and search for links
+            break;
+
+        default:
+            /* log.info("Returns echo message {}: {}", replyToken, text);
+             this.replyText(
+                     replyToken,
+                     text
+             );*/
+            if (text.matches("^([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?$")) {
+                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null,
+                        "What part you want to know about the course " + text + "?", "Options:",
+                        Arrays.asList(new PostbackAction("All", "course_info_all&" + text),
                                 new MessageAction("Any More?",
-                                                  "Sorry, we currently only support displaying these information for you.")
-                        ));
+                                        "Sorry, we currently only support displaying these information for you.")));
                 TemplateMessage templateMessage = new TemplateMessage("Course Information Selecter", buttonsTemplate);
                 this.reply(replyToken, templateMessage);
-                }
-                break;
+            } else {
+                String default_reply = "Which information do you want to know?\n" + "a) Course information\n"
+                        + "b) Restaurant/Facilities opening hours\n" + "c) Links suggestions\n" + "d) Find people\n"
+                        + "e) Lift advisor\n" + "f) Bus arrival/Departure time\n" + "g) Deadline list\n"
+                        + "h) Set notifications\n";
+                log.info("Returns  message {}: {}", replyToken, default_reply);
+                this.replyText(replyToken, default_reply);
+            }
+            break;
         }
     }
 
     private static String createUri(String path) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath()
-                                          .path(path).build()
-                                          .toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(path).build().toUriString();
     }
 
     private void system(String... args) {
@@ -324,9 +297,7 @@ public class CallbackController {
         String fileName = LocalDateTime.now().toString() + '-' + UUID.randomUUID().toString() + '.' + ext;
         Path tempFile = ChatbotApplication.downloadedContentDir.resolve(fileName);
         tempFile.toFile().deleteOnExit();
-        return new DownloadedContent(
-                tempFile,
-                createUri("/downloaded/" + tempFile.getFileName()));
+        return new DownloadedContent(tempFile, createUri("/downloaded/" + tempFile.getFileName()));
     }
 
     @Value
