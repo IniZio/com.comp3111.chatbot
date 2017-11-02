@@ -239,7 +239,7 @@ public class CallbackController {
 
         switch (text) {
             case "profile": {
-                String userId = event.getSource().getUserId();
+                //String userId = event.getSource().getUserId();
                 if (userId != null) {
                     lineMessagingClient
                             .getProfile(userId)

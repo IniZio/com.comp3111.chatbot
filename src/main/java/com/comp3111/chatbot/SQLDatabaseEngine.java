@@ -52,12 +52,12 @@ public class SQLDatabaseEngine {
 	}
 	
 	
-	public void storeAction(String id, String text, Action act){
-		try {
-			Connection connection = this.getConnection();
-			PreparedStatement stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+act.name() +"' );" );
-			ResultSet rs = stmt.executeQuery();
+	public void storeAction(String id, String text, Action act) throws Exception{
+		Connection connection = this.getConnection();
+		PreparedStatement stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+act.name() +"' );" );
+		ResultSet rs = stmt.executeQuery();
 		
+		try {		
 			rs.close();
 			stmt.close();
 			connection.close();
@@ -69,7 +69,7 @@ public class SQLDatabaseEngine {
 		}		
 	
 	
-	public Action nextAction(String id){
+	public Action nextAction(String id) throws Exception{
 		Action next= Action.valueOf("MAIN");
 		
 		Connection connection = this.getConnection();
