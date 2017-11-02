@@ -1,20 +1,22 @@
 version: '3.1'
 services:
   spring:
+    environment:
+    - DATABASE_URL=${DATABASE_URL}
     build: ./
     ports:
       - "8080:8080"
-    depends_on:
-      - mongo
-    links:
-      - mongo
-  mongo:
-    image: mongo
-    volumes:
-      - /data/mongodb/db:/data/db
-    ports:
-      - "27017:27017"
-    command: --port 27017 --ipv6 --storageEngine wiredTiger
+    # depends_on:
+    #   - mongo
+    # links:
+    #   - mongo
+  # mongo:
+  #   image: mongo
+  #   volumes:
+  #     - /data/mongodb/db:/data/db
+  #   ports:
+  #     - "27017:27017"
+  #   command: --port 27017 --ipv6 --storageEngine wiredTiger
   # postgres:
   #   build: ./docker-images/postgres
   #   environment:
