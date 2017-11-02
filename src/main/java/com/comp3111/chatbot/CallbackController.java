@@ -220,7 +220,8 @@ public class CallbackController {
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         String text = content.getText();
-
+        text=text.toLowerCase();
+        
         log.info("Got text message from {}: {}", replyToken, text);
         
         String userId = event.getSource().getUserId();			
@@ -241,7 +242,7 @@ public class CallbackController {
 	                    reply_people
 	            );
 	    		db. storeAction(userId, text,Action.MAIN);
-    		return;
+	    		return;
         }
         
         switch (text) {
