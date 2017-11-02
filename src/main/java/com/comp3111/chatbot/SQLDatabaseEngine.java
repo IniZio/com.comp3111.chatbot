@@ -40,7 +40,7 @@ public class SQLDatabaseEngine {
 		throw new Exception("NOT FOUND");
 	}
 	 
-	 String show() throws Exception {
+	 String showFacilitiesChoices() throws Exception {
 		//Write your code here
 		String result = null;
 		try {

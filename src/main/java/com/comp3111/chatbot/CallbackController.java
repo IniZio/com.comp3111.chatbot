@@ -413,7 +413,7 @@ public class CallbackController {
             case "b":		//provide facilities time
             	String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
             	try {
-            		reply += database.show();
+            		reply += database.showFacilitiesChoices();
             	} catch (Exception e) {
             		reply = "Exception occur";
             	}
