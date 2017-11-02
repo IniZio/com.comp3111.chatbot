@@ -33,7 +33,16 @@ dependencies {
 	compile('com.linecorp.bot:line-bot-api-client:1.10.0')
 	compile('com.linecorp.bot:line-bot-spring-boot:1.10.0')
 	compile('commons-io:commons-io:2.6')
+	compile('org.jsoup:jsoup:1.10.3')
+	compile('me.ghui:Fruit:1.0.4')
 	runtime('org.springframework.boot:spring-boot-devtools')
 	// testCompile('org.springframework.boot:spring-boot-starter-test')
+	
+	
+    compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
+}
+
+test {
+    environment "DATABASE_URL", "postgres://hzexdguaujeemg:0b19b608607d151b840633d94b3a0f8690335aae595344c60bcf6ae0aa439896@ec2-54-221-244-196.compute-1.amazonaws.com:5432/dfsl0jltudjukf" 
 }
 
