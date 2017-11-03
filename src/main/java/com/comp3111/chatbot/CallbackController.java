@@ -211,7 +211,7 @@ public class CallbackController {
         if (origin.matches(".*([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?.*")) {
             text = origin.toLowerCase();
             final Pattern pattern = Pattern.compile("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?");
-            final Matcher matcher = pattern.matcher(text);
+            final Matcher matcher = pattern.matcher(origin);
             matcher.find();
             String co_name = matcher.group(0);
             if (text.contains("overview")) {
