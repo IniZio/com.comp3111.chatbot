@@ -6,8 +6,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -15,7 +17,7 @@ import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import com.linecorp.bot.model.action.DatetimePickerAction;
+import com.linecorp.bot.model.action.*;
 import com.linecorp.bot.model.message.template.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -25,9 +27,6 @@ import com.google.common.io.ByteStreams;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.MessageContentResponse;
 import com.linecorp.bot.model.ReplyMessage;
-import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.action.PostbackAction;
-import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.BeaconEvent;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.FollowEvent;
@@ -65,12 +64,17 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
+import com.comp3111.chatbot.BusETARequestHandler;
+
 @Slf4j
 @LineMessageHandler
 public class CallbackController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
-    private int tag = -1;
+    // For People
+    private static int number = 0;
+    // For OpeningHours
+    private static int tag = 0;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -173,7 +177,7 @@ public class CallbackController {
             throw new IllegalArgumentException("replyToken must not be empty");
         }
         if (message.length() > 1000) {
-            message = message.substring(0, 1000 - 2) + "……";
+            message = message.substring(0, 1000 - 2) + "�色��";
         }
         this.reply(replyToken, new TextMessage(message));
     }
@@ -194,15 +198,225 @@ public class CallbackController {
         reply(replyToken, new StickerMessage(content.getPackageId(), content.getStickerId()));
     }
 
-    private void handleTextContent(String replyToken, Event event, TextMessageContent content) throws Exception {
-        String text = content.getText();
 
+    private void handleTextContent(String replyToken, Event event, TextMessageContent content)
+            throws Exception {
+
+        String text = content.getText();
+        text=text.toLowerCase();        
+        
         log.info("Got text message from {}: {}", replyToken, text);
+        text=text.toLowerCase();
+        // For lift advisor
+        if (text.contains("room") || text.contains("rm")){
+            String replyMessage;
+            try {
+                LiftAdvisor liftAdvisor = new LiftAdvisor(text);
+                if (liftAdvisor.noRoomNumberDetected()){
+                    replyMessage = "No room number detected. Please enter number along with keyword room or rm";
+                    this.replyText(replyToken, replyMessage);
+                    return;
+                }
+                replyMessage = liftAdvisor.getReplyMessage();
+            }catch (Exception e){
+                replyMessage = "error";
+            }
+            this.replyText(replyToken, replyMessage);
+            return;
+        }
+        
+        if (number==1) {			// for finding people
+        		String replyPeople;
+        	
+	        URLConnectionReader search = new URLConnectionReader();
+	        	PeopleList result=search.SearchPeople(text);
+	        ArrayList<people> resultList = result.getList();
+	        	
+	        	StringBuilder results = new StringBuilder();
+	        	results.append("Search Result(s):");
+	        	
+	        if (resultList ==null) {
+                    results.append("\nNot found.");
+                    this.replyText(replyToken, results.toString());
+                    return;
+	        }
+	        else{
+		        	for (people p : resultList){
+		        		results.append("\n");
+		        		results.append("Title: ");
+		        		results.append(p.getTitle());
+		        		results.append("\n");
+		        		results.append("Name: ");
+		        		results.append(p.getName());
+		        		results.append("\n");
+		        		results.append("Email: ");
+		        		results.append(p.getEmail());
+		        		results.append("\n");
+		        		results.append("Phone: ");
+		        		results.append(p.getPhone());
+		        		results.append("\n");
+		        		results.append("Department: ");
+		        		results.append(p.getDepartment());
+		        		results.append("\n");
+		        		results.append("Room: ");
+		        		results.append(p.getRoom());
+		        		results.append("\n");
+		    		}
+	        }
+	        
+	        if (PeopleList.too_many==true) {
+	        		results.append("Too many results...");
+	        }
+	        replyPeople = results.toString();
+	        this.replyText(replyToken, replyPeople);
+	        number=0;
+	        return;
+        }
+ 
+        if(tag == 'b')
+        {
+        	String reply = null;
+        	try {
+        		reply = database.openingHourSearch(text);
+        	} catch (Exception e) {
+        		reply = "Cannot find given facility";
+        	}
+            log.info("Returns echo message {}: {}", replyToken, reply);
+            this.replyText(
+                    replyToken,
+                     reply
+            );
+        }
+
+        String reply = "";
         switch (text) {
         case "a":
             this.reply(replyToken, new TextMessage(
                     "You can directly type the course code or questions like \"I want to know more about course COMP3111\"to find information about a certain course"));
             break;
+                    
+            case "b":		//provide facilities time
+            reply = "Please enter the number in front of the facilities to query the opening hour:\n";
+            try {
+                reply += database.showFacilitiesChoices();
+            } catch (Exception e) {
+                reply = "Exception occur";
+            }
+            log.info("Returns echo message {}: {}", replyToken, reply);
+            this.replyText(
+                replyToken,
+                reply
+            );
+            tag = 'b';
+            break;
+                
+        case "c":		// suggestedLinks
+            reply ="Which link do you want to find?\n"
+            +"1) Register for a locker\n"
+            +"2) Register for courses\n"
+            +"3) Check grades\n"
+            +"4) Find school calendar\n"
+            +"5) Book library rooms\n"
+            +"6) Find lecture materials\n";
+            
+            this.replyText(
+                replyToken,
+                reply
+                );
+                // get input and search for links
+            break;
+        
+        case"d":		//find people
+            reply ="Who do you want to find? Please enter his/her full name or ITSC.";
+            this.replyText(
+                    replyToken,
+                    reply
+            );
+            number=1; // get input and search for name
+            break;
+        case "91 to diamond hill":{
+            String replyMessage;
+            try {
+                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
+                String results = "";
+                results = results + "Time: ";
+                results = results + busETARequestHandler.getReplyMessage();
+                replyMessage = results;
+            } catch (Exception e){
+                replyMessage = "error";
+            }
+            this.replyText(replyToken, replyMessage);
+            break;
+        }
+        case "91m to diamond hill":{
+            String replyMessage;
+            try {
+                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
+                String results = "";
+                results = results + "Time: ";
+                results = results + busETARequestHandler.getReplyMessage();
+                replyMessage = results;
+            } catch (Exception e){
+                replyMessage = "error";
+            }
+            this.replyText(replyToken, replyMessage);
+            break;
+        }
+        case "91 to clear water bay":{
+            String replyMessage;
+            try {
+                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
+                String results = "";
+                results = results + "Time: ";
+                results = results + busETARequestHandler.getReplyMessage();
+                replyMessage = results;
+            } catch (Exception e){
+                replyMessage = "error";
+            }
+            this.replyText(replyToken, replyMessage);
+            break;
+        }
+        case "91m To po lam":{
+            String replyMessage;
+            try {
+                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
+                String results = "";
+                results = results + "Time: ";
+                results = results + busETARequestHandler.getReplyMessage();
+                replyMessage = results;
+            } catch (Exception e){
+                replyMessage = "error";
+            }
+            this.replyText(replyToken, replyMessage);
+            break;
+        }
+        case "91":{
+            ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
+                    new MessageAction("Diamond Hill", "91 To Diamond Hill"),
+                    new MessageAction("Clear Water Bay", "91 To Clear Water Bay")
+            );
+            TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in 91 To Diamond Hill or 91 To Clear Water Bay", route91ConfirmTemplate);
+            this.reply(replyToken, route91TemplateMessage);
+            break;
+        }
+        case "91m":{
+            ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
+                    new MessageAction("Diamond Hill", "91M To Diamond Hill"),
+                    new MessageAction("Po Lam", "91M To Po Lam")
+            );
+            TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in 91M To Diamond Hill or 91M To Po Lam", route91MConfirmTemplate);
+            this.reply(replyToken, route91MTemplateMessage);
+            break;
+        }
+        case "bus":{
+            ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
+                    new MessageAction("91", "91"),
+                    new MessageAction("91M", "91M")
+                    );
+            TemplateMessage busTemplateMessage = new TemplateMessage("Please type in  91 or 91M", busConfirmTemplate);
+            this.reply(replyToken, busTemplateMessage);
+            break;
+        }
         case "profile": {
             String userId = event.getSource().getUserId();
             if (userId != null) {
@@ -221,15 +435,6 @@ public class CallbackController {
             }
             break;
         }
-
-        case "c": // suggestedLinks
-            String reply = "Which link do you want to find?\n" + "1) Register for a locker\n"
-                    + "2) Register for courses\n" + "3) Check grades\n" + "4) Find school calendar\n"
-                    + "5) Book library rooms\n" + "6) Find lecture materials\n";
-
-            this.replyText(replyToken, reply);
-            // get input and search for links
-            break;
 
         default:
             /* log.info("Returns echo message {}: {}", replyToken, text);
@@ -326,4 +531,12 @@ public class CallbackController {
         Path path;
         String uri;
     }
+    
+	public CallbackController() {
+		database = new SQLDatabaseEngine();
+		
+	}
+
+	private SQLDatabaseEngine database;
+	
 }
