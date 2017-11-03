@@ -259,7 +259,7 @@ public class CallbackController {
                     else{
                         for (people p : resultList){
                             results.append(
-                                String.format("\nTitle: %s\nName: %s\nEmail: %s\nPhone: %s\nDepartment: %s\nRoom: %s",
+                                String.format("\n\nTitle: %s\nName: %s\nEmail: %s\nPhone: %s\nDepartment: %s\nRoom: %s",
                                     p.getTitle(),
                                     p.getName(),
                                     p.getEmail(),
@@ -272,7 +272,7 @@ public class CallbackController {
                     }
                     
                     if (PeopleList.too_many==true) {
-                        results.append("Too many results...");
+                        results.append("\nToo many results...");
                     }
                     replyPeople = results.toString();
                     this.replyText(replyToken, replyPeople);
