@@ -93,7 +93,15 @@ public class SQLDatabaseEngine {
 		
 		try {		
 			connection = this.getConnection();
-			stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+action +"' );" );
+			stmt = connection.prepareStatement("SELECT count(*) FROM mainflow WHERE userid=" + "'" + id + "';");
+			rs = stmt.executeQuery();
+			rs.next();
+			log.info("int = {}", rs.getInt(1));
+			////check if the userid aready exit, if yes, update it, else inset a new entry
+			if(rs.getInt(1)==0)
+				stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+action +"' );" );
+			else
+				stmt = connection.prepareStatement("UPDATE mainflow SET userinput=" + "'"+text +"',"+ "action=" + "'"+action +"'" + " where userid=''"+id+"';" );
 			rs = stmt.executeQuery();
 			connection.close();
 		} catch (Exception e) {
