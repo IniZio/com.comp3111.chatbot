@@ -203,10 +203,47 @@ public class CallbackController {
             throws Exception {
 
         String text = content.getText();
+        String origin = text;
         text=text.toLowerCase();        
         
         log.info("Got text message from {}: {}", replyToken, text);
-        text=text.toLowerCase();
+        //
+        if (origin.matches(".*([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?.*")) {
+            text = origin.toLowerCase();
+            final Pattern pattern = Pattern.compile("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?");
+            final Matcher matcher = pattern.matcher(text);
+            matcher.find();
+            String co_name = matcher.group(0);
+            if (text.contains("overview")) {
+                String result = courseInfoController.courseSearch(co_name, "ov");
+                log.info("Returns  message {}:{}, {}", replyToken,co_name, result);
+                this.replyText(replyToken, result);
+            } else if (text.contains("pre-requisites") || text.contains("prerequisites")) {
+                String result = courseInfoController.courseSearch(co_name, "pr");
+                log.info("Returns  message {}: {}", replyToken, result);
+                this.replyText(replyToken, result);
+            } else if (text.contains("schedule") || text.contains("time")) {
+                String result = courseInfoController.courseSearch(co_name, "sch");
+                log.info("Returns  message {}: {}", replyToken, result);
+                this.replyText(replyToken, result);
+            } else {
+                co_name = co_name.toUpperCase();
+                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Course " + co_name,
+                        "What do you want to do?",
+                        Arrays.asList(new MessageAction("Overview", "Course Overview for " + co_name),
+                                new MessageAction("Pre-requisites", "Pre-requisites of " + co_name),
+                                new MessageAction("Schedules", "Schedules for " + co_name)));
+                TemplateMessage templateMessage = new TemplateMessage("--------- Course " + co_name
+                        + "---------\n What do you Want to know about?\n\n Use " + co_name
+                        + " with following keywords to find out:\nOverview)Course Overview for " + co_name
+                        + "\nPre-requisites) Pre-requisites of " + co_name + "\nSchedules)Schedules for " + co_name
+                        + "\n\nNOTE:\nInteractive interface is disabled in desktop client. If you want to use interactive interface, please take following actions:",
+                        buttonsTemplate);
+                log.info("Returns  message {}: {}", replyToken, text);
+                this.reply(replyToken, templateMessage);
+            }
+            return;
+        }
         // For lift advisor
         if (text.contains("room") || text.contains("rm")){
             String replyMessage;
@@ -442,48 +479,14 @@ public class CallbackController {
                      replyToken,
                      text
              );*/
-            if (text.matches(".*([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?.*")) {
-                text = text.toLowerCase();
-                final Pattern pattern = Pattern.compile("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?");
-                final Matcher matcher = pattern.matcher(text);
-                matcher.find();
-                String co_name = matcher.group(0);
-                if (text.contains("overview")) {
-                    String result = courseInfoController.courseSearch(co_name, "ov");
-                    log.info("Returns  message {}:{}, {}", replyToken,co_name, result);
-                    this.replyText(replyToken, result);
-                } else if (text.contains("pre-requisites") || text.contains("prerequisites")) {
-                    String result = courseInfoController.courseSearch(co_name, "pr");
-                    log.info("Returns  message {}: {}", replyToken, result);
-                    this.replyText(replyToken, result);
-                } else if (text.contains("schedule") || text.contains("time")) {
-                    String result = courseInfoController.courseSearch(co_name, "sch");
-                    log.info("Returns  message {}: {}", replyToken, result);
-                    this.replyText(replyToken, result);
-                } else {
-                    co_name = co_name.toUpperCase();
-                    ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Course " + co_name,
-                            "What do you want to do?",
-                            Arrays.asList(new MessageAction("Overview", "Course Overview for " + co_name),
-                                    new MessageAction("Pre-requisites", "Pre-requisites of " + co_name),
-                                    new MessageAction("Schedules", "Schedules for " + co_name)));
-                    TemplateMessage templateMessage = new TemplateMessage("--------- Course " + co_name
-                            + "---------\n What do you Want to know about?\n\n Use " + co_name
-                            + " with following keywords to find out:\nOverview)Course Overview for " + co_name
-                            + "\nPre-requisites) Pre-requisites of " + co_name + "\nSchedules)Schedules for " + co_name
-                            + "\n\nNOTE:\nInteractive interface is disabled in desktop client. If you want to use interactive interface, please take following actions:",
-                            buttonsTemplate);
-                    log.info("Returns  message {}: {}", replyToken, text);
-                    this.reply(replyToken, templateMessage);
-                }
-            } else {
+             
                 String default_reply = "Which information do you want to know?\n" + "a) Course information\n"
                         + "b) Restaurant/Facilities opening hours\n" + "c) Links suggestions\n" + "d) Find people\n"
                         + "e) Lift advisor\n" + "f) Bus arrival/Departure time\n" + "g) Deadline list\n"
                         + "h) Set notifications\n";
                 log.info("Returns  message {}: {}", replyToken, default_reply);
                 this.replyText(replyToken, default_reply);
-            }
+            
             break;
         }
     }
