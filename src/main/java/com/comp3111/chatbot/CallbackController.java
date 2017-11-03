@@ -237,20 +237,26 @@ public class CallbackController {
                      replyToken,
                      text
              );*/
-            if (text.matches("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?")) {
+            if (text.matches(".*([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?.*")) {
                 text = text.toLowerCase();
                 final Pattern pattern = Pattern.compile("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?");
                 final Matcher matcher = pattern.matcher(text);
                 matcher.find();
-                String co_name = matcher.group(1);
+                String co_name = matcher.group(0);
                 if (text.contains("overview")) {
                     String result = courseInfoController.courseSearch(co_name, "ov");
+                    log.info("Returns  message {}:{}, {}", replyToken,co_name, result);
+                    this.replyText(replyToken, result);
                 } else if (text.contains("pre-requisites") || text.contains("prerequisites")) {
                     String result = courseInfoController.courseSearch(co_name, "pr");
+                    log.info("Returns  message {}: {}", replyToken, result);
+                    this.replyText(replyToken, result);
                 } else if (text.contains("schedule") || text.contains("time")) {
                     String result = courseInfoController.courseSearch(co_name, "sch");
+                    log.info("Returns  message {}: {}", replyToken, result);
+                    this.replyText(replyToken, result);
                 } else {
-                    co_name = text.toUpperCase();
+                    co_name = co_name.toUpperCase();
                     ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Course " + co_name,
                             "What do you want to do?",
                             Arrays.asList(new MessageAction("Overview", "Course Overview for " + co_name),
