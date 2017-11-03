@@ -36,10 +36,11 @@ dependencies {
 	compile('commons-io:commons-io:2.6')
 	compile('org.jsoup:jsoup:1.10.3')
 	compile('me.ghui:Fruit:1.0.4')
+	
 	runtime('org.springframework.boot:spring-boot-devtools')
 	// testCompile('org.springframework.boot:spring-boot-starter-test')
 	
-	
+	compile group: 'commons-dbutils', name: 'commons-dbutils', version: '1.7'
     compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
 }
 

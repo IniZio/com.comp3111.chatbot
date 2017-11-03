@@ -1,14 +1,16 @@
 package com.comp3111.chatbot;
 
 import lombok.extern.slf4j.Slf4j;
-import javax.annotation.PostConstruct;
-import javax.sql.DataSource;
-import java.sql.*;
 import java.net.URISyntaxException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URI;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.apache.commons.dbutils.*;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SQLDatabaseEngine {
@@ -31,14 +33,9 @@ public class SQLDatabaseEngine {
 		}catch(SQLException e2) {
 			log.info("SQLException: ", e2.toString());
 		} finally {
-			try {
-				rs.close();
-				stmt.close();
-				connection.close();
-			}
-			catch (Exception e) {
-				log.info("Exception while disconnection: {}", e.toString());
-			}
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(connection);
 		}
 
 		if(result!=null)
@@ -69,14 +66,9 @@ public class SQLDatabaseEngine {
 		} catch(SQLException e2) {
 			log.info("SQLException: ", e2.toString());
 		} finally {
-			try {
-				rs.close();
-				stmt.close();
-				connection.close();
-			}
-			catch (Exception e) {
-				log.info("Exception while disconnection: {}", e.toString());
-			}
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(connection);
 		}
 
 		if(result!=null)
@@ -107,13 +99,9 @@ public class SQLDatabaseEngine {
 		} catch (Exception e) {
 			log.info("Exception while storing: {}", e.toString());
 		} finally {
-			try {		
-				rs.close();
-				stmt.close();
-				connection.close();	
-			} catch (Exception e) {
-				log.info("Exception while storing: {}", e.toString());
-			}
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(stmt);
+			DbUtils.closeQuietly(connection);
 		}
 	}		
 
