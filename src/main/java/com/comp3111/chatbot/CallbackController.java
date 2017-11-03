@@ -227,8 +227,9 @@ public class CallbackController {
         // SQLDatabaseEngine db = new SQLDatabaseEngine();        
         String[] curr = db.nextAction(userId);
         String action = curr[1];
+        String param = curr[0];
         log.info("Going to handle action {}, and it is {} null", action, action == null ? "" : "not");
-        if (action == null || action.equals(ACTION.MAIN)) {
+        if (action == null || action.equals(ACTION.EXIT_MAIN)) {
             return false;
         }
 
@@ -275,7 +276,7 @@ public class CallbackController {
                     }
                     replyPeople = results.toString();
                     this.replyText(replyToken, replyPeople);
-                    db.storeAction(userId, text, ACTION.MAIN);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
                     break;
                 }
                 case ACTION.ROOM_INPUT: {
@@ -298,10 +299,141 @@ public class CallbackController {
                         reply = "error";
                     }
                     this.replyText(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.MAIN);                   
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);                   
                     break;
                 }
-                case ACTION.MAIN: {
+                case ACTION.OPENINGHOUR_CHOOSE: {
+                    String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
+                    try {
+                        reply += db.showFacilitiesChoices();
+                    } catch (Exception e) {
+                        reply = "Exception occur";
+                    }
+                    log.info("Returns echo message {}: {}", replyToken, reply);
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.OPENINGHOUR_SEARCH);                                       
+                    break;
+                }
+                case ACTION.OPENINGHOUR_SEARCH: {
+                    String reply;
+                    try {
+                        reply = db.openingHourSearch(text);
+                    } catch (Exception e) {
+                        reply = "Cannot find given facility";
+                    }
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                    break;
+                }
+                case ACTION.BUS_CHOOSE_BUS: {
+                    String reply ="Choose which bus you would like to take.";
+                    ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
+                        new MessageAction("91", "91"),
+                        new MessageAction("91M", "91M")
+                    );
+                    TemplateMessage busTemplateMessage = new TemplateMessage("Please type in 91 or 91M", busConfirmTemplate);
+                    this.reply(replyToken, busTemplateMessage);
+                    db.storeAction(userId, text, ACTION.BUS_CHOOSE_DEST);
+                    break;
+                }
+                case ACTION.BUS_CHOOSE_DEST: {
+                    switch (text) {
+                        case "91":{
+                            ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
+                                    new MessageAction("Diamond Hill", "Diamond Hill"),
+                                    new MessageAction("Clear Water Bay", "Clear Water Bay")
+                            );
+                            TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in Diamond Hill or Clear Water Bay", route91ConfirmTemplate);
+                            this.reply(replyToken, route91TemplateMessage);
+                            db.storeAction(userId, text, ACTION.BUS_SEARCH);
+                            break;
+                        }
+                        case "91m":{
+                            ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
+                                    new MessageAction("Diamond Hill", "Diamond Hill"),
+                                    new MessageAction("Po Lam", "Po Lam")
+                            );
+                            TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in Diamond Hill or Po Lam", route91MConfirmTemplate);
+                            this.reply(replyToken, route91MTemplateMessage);
+                            db.storeAction(userId, text, ACTION.BUS_SEARCH);
+                            break;
+                        }
+                        default: {
+                            String reply = "Invalid bus number.";
+                            this.replyText(replyToken, reply);
+                            db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS);
+                            handleNextAction(userId, replyToken, text, db);
+                            return true;
+                        }
+                    }
+                    break;
+                }
+                case ACTION.BUS_SEARCH: {
+                    switch (param + " to " + text) {
+                        case "91 to diamond hill":{
+                            String replyMessage;
+                            try {
+                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
+                                String results = "";
+                                results = results + "Time: ";
+                                results = results + busETARequestHandler.getReplyMessage();
+                                replyMessage = results;
+                            } catch (Exception e){
+                                replyMessage = "error";
+                            }
+                            this.replyText(replyToken, replyMessage);
+                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                            break;
+                        }
+                        case "91m to diamond hill":{
+                            String replyMessage;
+                            try {
+                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
+                                String results = "";
+                                results = results + "Time: ";
+                                results = results + busETARequestHandler.getReplyMessage();
+                                replyMessage = results;
+                            } catch (Exception e){
+                                replyMessage = "error";
+                            }
+                            this.replyText(replyToken, replyMessage);
+                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                            break;
+                        }
+                        case "91 to clear water bay":{
+                            String replyMessage;
+                            try {
+                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
+                                String results = "";
+                                results = results + "Time: ";
+                                results = results + busETARequestHandler.getReplyMessage();
+                                replyMessage = results;
+                            } catch (Exception e){
+                                replyMessage = "error";
+                            }
+                            this.replyText(replyToken, replyMessage);
+                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                            break;
+                        }
+                        case "91m to po lam":{
+                            String replyMessage;
+                            try {
+                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
+                                String results = "";
+                                results = results + "Time: ";
+                                results = results + busETARequestHandler.getReplyMessage();
+                                replyMessage = results;
+                            } catch (Exception e){
+                                replyMessage = "error";
+                            }
+                            this.replyText(replyToken, replyMessage);
+                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                            break;
+                        }
+                    }
+                    break;
+                }
+                case ACTION.EXIT_MAIN: {
                     // TODO: print main menu
                     break;
                 }
@@ -327,26 +459,11 @@ public class CallbackController {
         String userId = event.getSource().getUserId();			
         SQLDatabaseEngine db = new SQLDatabaseEngine();
 
-        // Leave if the action is done
+        // ... then leave if the action is done
         if (handleNextAction(userId, replyToken, text, db))
             return;
 
-        // 2. If no matching previous action, use partial matching on the input
-        // if(tag == 'b')
-        // {
-        // 	String reply = null;
-        // 	try {
-        // 		reply = database.openingHourSearch(text);
-        // 	} catch (Exception e) {
-        // 		reply = "Cannot find given facility";
-        // 	}
-        //     log.info("Returns echo message {}: {}", replyToken, reply);
-        //     this.replyText(
-        //             replyToken,
-        //              reply
-        //     );
-        // }
-
+        // 2. If no matching previous action, determine action type based on input
         String reply = "";
         switch (text) {
             case "profile": {
@@ -376,35 +493,25 @@ public class CallbackController {
             }
             
             case "b":		//provide facilities time
-                reply = "Please enter the number in front of the facilities to query the opening hour:\n";
-                try {
-                    reply += database.showFacilitiesChoices();
-                } catch (Exception e) {
-                    reply = "Exception occur";
-                }
-                log.info("Returns echo message {}: {}", replyToken, reply);
-                this.replyText(
-                    replyToken,
-                    reply
-                );
-                tag = 'b';
+                try { db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
                 break;
-                    
-            case "c":		// suggestedLinks
-                reply ="Which link do you want to find?\n"
-                +"1) Register for a locker\n"
-                +"2) Register for courses\n"
-                +"3) Check grades\n"
-                +"4) Find school calendar\n"
-                +"5) Book library rooms\n"
-                +"6) Find lecture materials\n";
+
+            // case "c":		// suggestedLinks
+            //     reply ="Which link do you want to find?\n"
+            //     +"1) Register for a locker\n"
+            //     +"2) Register for courses\n"
+            //     +"3) Check grades\n"
+            //     +"4) Find school calendar\n"
+            //     +"5) Book library rooms\n"
+            //     +"6) Find lecture materials\n";
                 
-                this.replyText(
-                    replyToken,
-                    reply
-                    );
-                    // get input and search for links
-                break;
+            //     this.replyText(
+            //         replyToken,
+            //         reply
+            //         );
+            //         // get input and search for links
+            //     break;
             
             case "d":		//find people
                 try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
@@ -415,90 +522,40 @@ public class CallbackController {
                 try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
                 break;
-
-            case "91 to diamond hill":{
-                String replyMessage;
-                try {
-                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
-                    String results = "";
-                    results = results + "Time: ";
-                    results = results + busETARequestHandler.getReplyMessage();
-                    replyMessage = results;
-                } catch (Exception e){
-                    replyMessage = "error";
-                }
-                this.replyText(replyToken, replyMessage);
+            
+            case "f":
+                try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
                 break;
-            }
-            case "91m to diamond hill":{
-                String replyMessage;
-                try {
-                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
-                    String results = "";
-                    results = results + "Time: ";
-                    results = results + busETARequestHandler.getReplyMessage();
-                    replyMessage = results;
-                } catch (Exception e){
-                    replyMessage = "error";
-                }
-                this.replyText(replyToken, replyMessage);
-                break;
-            }
-            case "91 to clear water bay":{
-                String replyMessage;
-                try {
-                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
-                    String results = "";
-                    results = results + "Time: ";
-                    results = results + busETARequestHandler.getReplyMessage();
-                    replyMessage = results;
-                } catch (Exception e){
-                    replyMessage = "error";
-                }
-                this.replyText(replyToken, replyMessage);
-                break;
-            }
-            case "91m To po lam":{
-                String replyMessage;
-                try {
-                    BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
-                    String results = "";
-                    results = results + "Time: ";
-                    results = results + busETARequestHandler.getReplyMessage();
-                    replyMessage = results;
-                } catch (Exception e){
-                    replyMessage = "error";
-                }
-                this.replyText(replyToken, replyMessage);
-                break;
-            }
-            case "91":{
-                ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
-                        new MessageAction("Diamond Hill", "91 To Diamond Hill"),
-                        new MessageAction("Clear Water Bay", "91 To Clear Water Bay")
-                );
-                TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in 91 To Diamond Hill or 91 To Clear Water Bay", route91ConfirmTemplate);
-                this.reply(replyToken, route91TemplateMessage);
-                break;
-            }
-            case "91m":{
-                ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
-                        new MessageAction("Diamond Hill", "91M To Diamond Hill"),
-                        new MessageAction("Po Lam", "91M To Po Lam")
-                );
-                TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in 91M To Diamond Hill or 91M To Po Lam", route91MConfirmTemplate);
-                this.reply(replyToken, route91MTemplateMessage);
-                break;
-            }
-            case "bus":{
-                ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
-                        new MessageAction("91", "91"),
-                        new MessageAction("91M", "91M")
-                        );
-                TemplateMessage busTemplateMessage = new TemplateMessage("Please type in  91 or 91M", busConfirmTemplate);
-                this.reply(replyToken, busTemplateMessage);
-                break;
-            }
+                
+            
+            // case "91":{
+            //     ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
+            //             new MessageAction("Diamond Hill", "91 To Diamond Hill"),
+            //             new MessageAction("Clear Water Bay", "91 To Clear Water Bay")
+            //     );
+            //     TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in 91 To Diamond Hill or 91 To Clear Water Bay", route91ConfirmTemplate);
+            //     this.reply(replyToken, route91TemplateMessage);
+            //     break;
+            // }
+            // case "91m":{
+            //     ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
+            //             new MessageAction("Diamond Hill", "91M To Diamond Hill"),
+            //             new MessageAction("Po Lam", "91M To Po Lam")
+            //     );
+            //     TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in 91M To Diamond Hill or 91M To Po Lam", route91MConfirmTemplate);
+            //     this.reply(replyToken, route91MTemplateMessage);
+            //     break;
+            // }
+            // case "bus":{
+            //     ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
+            //             new MessageAction("91", "91"),
+            //             new MessageAction("91M", "91M")
+            //             );
+            //     TemplateMessage busTemplateMessage = new TemplateMessage("Please type in  91 or 91M", busConfirmTemplate);
+            //     this.reply(replyToken, busTemplateMessage);
+            //     break;
+            // }
             default:
                 String default_reply ="Which information do you want to know?\n"
                     +"a) Course information\n"
