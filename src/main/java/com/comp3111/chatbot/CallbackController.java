@@ -221,7 +221,7 @@ public class CallbackController {
                 log.info("Returns message {}: {}", replyToken, result);
                 this.replyText(replyToken, result);
             } else if (text.contains("quota") || text.contains("seat") || text.contains("place")) {
-                String result = courseInfoController.courseSearch(co_name, "pr");
+                String result = courseInfoController.courseSearch(co_name, "qt");
                 log.info("Returns  message {}: {}", replyToken, result);
                 this.replyText(replyToken, result);
             } else if (text.contains("schedule") || text.contains("time")) {
