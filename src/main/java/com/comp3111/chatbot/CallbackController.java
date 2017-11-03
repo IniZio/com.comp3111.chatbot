@@ -213,12 +213,14 @@ public class CallbackController {
             final Pattern pattern = Pattern.compile("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?");
             final Matcher matcher = pattern.matcher(origin);
             matcher.find();
-            String co_name = matcher.group(0);
+            String co_name = matcher.group(0).toUpperCase();
+            
             if (text.contains("overview")) {
+                log.info("Received message {}: {}", replyToken, co_name);
                 String result = courseInfoController.courseSearch(co_name, "ov");
-                log.info("Returns  message {}:{}, {}", replyToken,co_name, result);
+                log.info("Returns message {}: {}", replyToken, result);
                 this.replyText(replyToken, result);
-            } else if (text.contains("pre-requisites") || text.contains("prerequisites")) {
+            } else if (text.contains("quota") || text.contains("seat") || text.contains("place")) {
                 String result = courseInfoController.courseSearch(co_name, "pr");
                 log.info("Returns  message {}: {}", replyToken, result);
                 this.replyText(replyToken, result);
@@ -231,12 +233,12 @@ public class CallbackController {
                 ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Course " + co_name,
                         "What do you want to do?",
                         Arrays.asList(new MessageAction("Overview", "Course Overview for " + co_name),
-                                new MessageAction("Pre-requisites", "Pre-requisites of " + co_name),
+                                new MessageAction("Quota", "Quota of " + co_name),
                                 new MessageAction("Schedules", "Schedules for " + co_name)));
                 TemplateMessage templateMessage = new TemplateMessage("--------- Course " + co_name
                         + "---------\n What do you Want to know about?\n\n Use " + co_name
                         + " with following keywords to find out:\nOverview)Course Overview for " + co_name
-                        + "\nPre-requisites) Pre-requisites of " + co_name + "\nSchedules)Schedules for " + co_name
+                        + "\nQuota) Quota of " + co_name + "\nSchedules)Schedules for " + co_name
                         + "\n\nNOTE:\nInteractive interface is disabled in desktop client. If you want to use interactive interface, please take following actions:",
                         buttonsTemplate);
                 log.info("Returns  message {}: {}", replyToken, text);

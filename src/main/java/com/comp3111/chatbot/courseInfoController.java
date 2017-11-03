@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONStringer;
@@ -24,14 +25,13 @@ public class courseInfoController {
 		
 		JSONTokener tokener = new JSONTokener(in);
 		JSONObject obj = new JSONObject(tokener);
-		
 		JSONObject course = ((JSONObject)obj).getJSONObject("courses").getJSONObject(text);
 		String output = ""; 
 		switch(options){
 			case "ov":
-			output = course.get("id").toString()+" - "+ course.get("name").toString();
+			output = course.get("id").toString()+" - "+ course.get("name").toString()+"\n\nDescription:\n"+course.getJSONObject("details").get("description").toString()+"\n\nCredit: "+course.get("credit").toString();
 			break;
-			case "pr":
+			case "qt":
 			break;
 			case "sch":
 			break;
@@ -42,7 +42,7 @@ public class courseInfoController {
 		if(output == "")
 		{
 			//doing not_found_course action
-			output = ERROR_NOT_FOUND_COURSE;
+			output = ERROR_NOT_FOUND_COURSE+"Status: Normal";
 		}
 		
 		return output;}
