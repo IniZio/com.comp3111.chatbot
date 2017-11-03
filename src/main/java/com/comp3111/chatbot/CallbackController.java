@@ -221,9 +221,17 @@ public class CallbackController {
         );
     }
 
-    private Boolean handleAction(String userId, String replyToken, String action, String text, SQLDatabaseEngine db)
+    private Boolean handleNextAction(String userId, String replyToken, String text, SQLDatabaseEngine db)
         throws Exception
     {
+        // SQLDatabaseEngine db = new SQLDatabaseEngine();        
+        String[] curr = db.nextAction(userId);
+        String action = curr[1];
+        log.info("Going to handle action {}, and it is {} null", action, action == null ? "" : "not");
+        if (action == null || action.equals(ACTION.MAIN)) {
+            return false;
+        }
+
         try {
             switch (action) {
                 case ACTION.PEOPLE_INPUT: {
@@ -270,6 +278,29 @@ public class CallbackController {
                     db.storeAction(userId, text, ACTION.MAIN);
                     break;
                 }
+                case ACTION.ROOM_INPUT: {
+                    String reply ="What room do you want to find? Please enter the room number.";                    
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.ROOM_SEARCH);
+                    break;
+                }
+                case ACTION.ROOM_SEARCH: {
+                    String reply;
+                    try {
+                        LiftAdvisor liftAdvisor = new LiftAdvisor(text);
+                        if (liftAdvisor.noRoomNumberDetected()){
+                            reply = "No room number detected. Please enter number along with keyword room or rm";
+                            this.replyText(replyToken, reply);
+                            break;
+                        }
+                        reply = liftAdvisor.getReplyMessage();
+                    }catch (Exception e){
+                        reply = "error";
+                    }
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.MAIN);                   
+                    break;
+                }
                 case ACTION.MAIN: {
                     // TODO: print main menu
                     break;
@@ -295,85 +326,12 @@ public class CallbackController {
         // 1. Check for stored next action...
         String userId = event.getSource().getUserId();			
         SQLDatabaseEngine db = new SQLDatabaseEngine();
-        String[] curr = db.nextAction(userId);
-        String action = curr[1];
 
-        // ... then handle action if has history in database and is not reset to homepage
-        if (action != null && !action.equals(ACTION.MAIN)) {
-            log.info("Next action: {}", action);
-
-            // Leave if the action is done
-            if (handleAction(userId, replyToken, action, text, db))
-                return;
-        }
+        // Leave if the action is done
+        if (handleNextAction(userId, replyToken, text, db))
+            return;
 
         // 2. If no matching previous action, use partial matching on the input
-        // For lift advisor
-        // if (text.contains("room") || text.contains("rm")){
-        //     String replyMessage;
-        //     try {
-        //         LiftAdvisor liftAdvisor = new LiftAdvisor(text);
-        //         if (liftAdvisor.noRoomNumberDetected()){
-        //             replyMessage = "No room number detected. Please enter number along with keyword room or rm";
-        //             this.replyText(replyToken, replyMessage);
-        //             return;
-        //         }
-        //         replyMessage = liftAdvisor.getReplyMessage();
-        //     }catch (Exception e){
-        //         replyMessage = "error";
-        //     }
-        //     this.replyText(replyToken, replyMessage);
-        //     return;
-        // }
-        
-        // if (number==1) {			// for finding people
-        // 		String replyPeople;
-        	
-	    //     URLConnectionReader search = new URLConnectionReader();
-	    //     	PeopleList result=search.SearchPeople(text);
-	    //     ArrayList<people> resultList = result.getList();
-	        	
-	    //     	StringBuilder results = new StringBuilder();
-	    //     	results.append("Search Result(s):");
-	        	
-	    //     if (resultList ==null) {
-        //             results.append("\nNot found.");
-        //             this.replyText(replyToken, results.toString());
-        //             return;
-	    //     }
-	    //     else{
-		//         	for (people p : resultList){
-		//         		results.append("\n");
-		//         		results.append("Title: ");
-		//         		results.append(p.getTitle());
-		//         		results.append("\n");
-		//         		results.append("Name: ");
-		//         		results.append(p.getName());
-		//         		results.append("\n");
-		//         		results.append("Email: ");
-		//         		results.append(p.getEmail());
-		//         		results.append("\n");
-		//         		results.append("Phone: ");
-		//         		results.append(p.getPhone());
-		//         		results.append("\n");
-		//         		results.append("Department: ");
-		//         		results.append(p.getDepartment());
-		//         		results.append("\n");
-		//         		results.append("Room: ");
-		//         		results.append(p.getRoom());
-		//         		results.append("\n");
-		//     		}
-	    //     }
-	        
-	    //     if (PeopleList.too_many==true) {
-	    //     		results.append("Too many results...");
-	    //     }
-	    //     replyPeople = results.toString();
-	    //     this.replyText(replyToken, replyPeople);
-	    //     number=0;
-	    //     return;
-        // }
- 
         // if(tag == 'b')
         // {
         // 	String reply = null;
@@ -450,8 +408,14 @@ public class CallbackController {
             
             case "d":		//find people
                 try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
-                handleAction(userId, replyToken, action, text, db);
+                handleNextAction(userId, replyToken, text, db);
                 break;
+
+            case "e":
+                try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
+
             case "91 to diamond hill":{
                 String replyMessage;
                 try {

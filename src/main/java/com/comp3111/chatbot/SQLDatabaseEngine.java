@@ -119,20 +119,23 @@ public class SQLDatabaseEngine {
 
 		try {
 			connection = this.getConnection();
+			log.info("userid: {}", id);
 			stmt = connection.prepareStatement("SELECT * FROM mainflow where userid = '" + id + "'");
 			
 			rs = stmt.executeQuery();
 			String sCurrentLine;
 
 			// Stupid way to loop til latest match record
-			while (rs.next()) {}
-
-			sCurrentLine = rs.getString(1) + ":" + rs.getString(2) +":"+ rs.getString(3) ;
-			String[] parts = sCurrentLine.split(":");
-			
-			if (id.equals(parts[0])) {
-				next[0] = parts[1];
-				next[1] = parts[2];
+			if(rs.next()) {
+				do {
+					sCurrentLine = rs.getString(1) + ":" + rs.getString(2) +":"+ rs.getString(3) ;
+					String[] parts = sCurrentLine.split(":");
+					
+					if (id.equals(parts[0])) {
+						next[0] = parts[1];
+						next[1] = parts[2];
+					}
+				} while (rs.next());
 			}
 			
 		}
