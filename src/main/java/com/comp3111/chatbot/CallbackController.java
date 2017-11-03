@@ -260,6 +260,7 @@ public class CallbackController {
                     if (resultList ==null) {
                         results.append("\nNot found.");
                         this.replyText(replyToken, results.toString());
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
                         break;
                     }
                     else{
