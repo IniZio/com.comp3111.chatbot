@@ -233,6 +233,12 @@ public class CallbackController {
             return false;
         }
 
+        // Exit from action to main menu
+        if (text.equals("exit")) {
+            db.storeAction(userId, text, ACTION.EXIT_MAIN);
+            handleNextAction(userId, replyToken, text, db);
+        }
+
         try {
             switch (action) {
                 case ACTION.PEOPLE_INPUT: {
@@ -527,35 +533,7 @@ public class CallbackController {
                 try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
                 break;
-                
-            
-            // case "91":{
-            //     ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
-            //             new MessageAction("Diamond Hill", "91 To Diamond Hill"),
-            //             new MessageAction("Clear Water Bay", "91 To Clear Water Bay")
-            //     );
-            //     TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in 91 To Diamond Hill or 91 To Clear Water Bay", route91ConfirmTemplate);
-            //     this.reply(replyToken, route91TemplateMessage);
-            //     break;
-            // }
-            // case "91m":{
-            //     ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
-            //             new MessageAction("Diamond Hill", "91M To Diamond Hill"),
-            //             new MessageAction("Po Lam", "91M To Po Lam")
-            //     );
-            //     TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in 91M To Diamond Hill or 91M To Po Lam", route91MConfirmTemplate);
-            //     this.reply(replyToken, route91MTemplateMessage);
-            //     break;
-            // }
-            // case "bus":{
-            //     ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
-            //             new MessageAction("91", "91"),
-            //             new MessageAction("91M", "91M")
-            //             );
-            //     TemplateMessage busTemplateMessage = new TemplateMessage("Please type in  91 or 91M", busConfirmTemplate);
-            //     this.reply(replyToken, busTemplateMessage);
-            //     break;
-            // }
+
             default:
                 String default_reply ="Which information do you want to know?\n"
                     +"a) Course information\n"
