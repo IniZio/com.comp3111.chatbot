@@ -537,14 +537,14 @@ public class CallbackController {
 
             default:
                 String default_reply ="Which information do you want to know?\n"
-                    +"a) Course information\n"
+                    +"a) Course information (WIP)\n"
                     +"b) Restaurant/Facilities opening hours\n"
-                    +"c) Links suggestions\n"
+                    +"c) Links suggestions (WIP)\n"
                     +"d) Find people\n"
                     +"e) Lift advisor\n"
                     +"f) Bus arrival/Departure time\n"
-                    +"g) Deadline list\n"
-                    +"h) Set notifications\n";
+                    +"g) Deadline list (WIP)\n"
+                    +"h) Set notifications (WIP)\n";
                 log.info("Returns  message {}: {}", replyToken, default_reply);
                 this.replyText(
                         replyToken,
