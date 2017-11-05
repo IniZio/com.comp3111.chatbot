@@ -32,9 +32,9 @@ public class SQLDatabaseEngine {
 			log.info("SQLException: ", e2.toString());
 		} finally {
 			try {
-				rs.close();
-				stmt.close();
-				connection.close();
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			}
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());
@@ -70,9 +70,9 @@ public class SQLDatabaseEngine {
 			log.info("SQLException: ", e2.toString());
 		} finally {
 			try {
-				rs.close();
-				stmt.close();
-				connection.close();
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			}
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());
@@ -108,9 +108,9 @@ public class SQLDatabaseEngine {
 			log.info("Exception while storing: {}", e.toString());
 		} finally {
 			try {		
-				rs.close();
-				stmt.close();
-				connection.close();	
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			} catch (Exception e) {
 				log.info("Exception while storing: {}", e.toString());
 			}
@@ -152,9 +152,9 @@ public class SQLDatabaseEngine {
 		}
 		finally {
 			try {
-				rs.close();
-				stmt.close();
-				connection.close();
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			}
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());

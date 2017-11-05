@@ -5,9 +5,7 @@ Chatbot project for Comp 3111
 
 ## Localhost setup
 1. Git clone
-2. Either:
-  - Fire up both server and database with [docker-ce](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/): `./gradlew build && docker-compose up -build`
-  - Or run gradle locally: `./gradlew bootRun`
+2. Fire up both server and database with [docker-ce](https://docs.docker.com/engine/installation/) and [docker-compose](https://docs.docker.com/compose/install/): `./gradlew build && docker-compose up -build`
 3. Run [ngrok](https://ngrok.com/download) `ngrok http 8080`
 4. Copy and paste the ngrok https url + '/callback' to Line control panel (Line@ Manager -> Message API Settings -> LINE Developeres -> Edit -> Webhook URL)
 
