@@ -101,7 +101,7 @@ public class SQLDatabaseEngine {
 			if(rs.getInt(1)==0)
 				stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+action +"' );" );
 			else
-				stmt = connection.prepareStatement("UPDATE mainflow SET userinput=" + "'"+text +"',"+ "action=" + "'"+action +"'" + " where userid=''"+id+"';" );
+				stmt = connection.prepareStatement("UPDATE mainflow SET userinput=" + "'"+text +"',"+ "action=" + "'"+action +"'" + " where userid=" + "'" + id+"';" );
 			rs = stmt.executeQuery();
 			connection.close();
 		} catch (Exception e) {
