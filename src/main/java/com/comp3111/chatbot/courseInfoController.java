@@ -46,13 +46,27 @@ public class courseInfoController {
 					output += "Co-Requisite: " + course.getJSONObject("details").get("co-requisite").toString() + "\n";
 				}
 				if (course.getJSONObject("details").has("previous code")) {
-					output += "Previous Code: " + course.getJSONObject("details").get("previous code").toString() + "\n";
+					output += "Previous Code: " + course.getJSONObject("details").get("previous code").toString()
+							+ "\n";
 				}
 				if (course.getJSONObject("details").has("exclusion")) {
-					output += "Exclusion: " + course.getJSONObject("details").get("exclusion").toString() + "\n";;
+					output += "Exclusion: " + course.getJSONObject("details").get("exclusion").toString() + "\n";
+					;
 				}
 				break;
 			case "qt":
+				JSONArray timetable = course.getJSONArray("sections");
+				output = course.get("id").toString() + " - " + course.get("name").toString() + "\n";
+				for(int n = 0; n < timetable.length(); n++)
+				{
+					JSONObject schedule_item = timetable.getJSONObject(n);
+					String name = schedule_item.get("name").toString();
+					String wait = schedule_item.get("wait").toString();
+					String quota = schedule_item.get("quota").toString();
+					String avail = schedule_item.get("avail").toString();
+					String enrol = schedule_item.get("enrol").toString();
+					output += "-------------------\nSection "+name+"\n"+"Quota\tEnrolled\tAvailable\tWaiting\n"+quota+"\t"+enrol+"\t"+avail+"\t"+wait+"\n";
+				}
 				break;
 			case "sch":
 				break;
