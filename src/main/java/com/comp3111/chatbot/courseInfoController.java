@@ -32,32 +32,24 @@ public class courseInfoController {
 				output = course.get("id").toString() + " - " + course.get("name").toString() + "\n\nDescription:\n"
 						+ trim_dc + "\n\nCredit: " + course.get("credit").toString() + "\n";
 				if (course.getJSONObject("details").has("attributes")) {
-					JSONArray attr = course.getJSONObject("details").getJSONArray("attributes");
-					output += "Common Core Type: ";
-					output = jsonArrayStringAdder(output, attr, false);
+					output += "Common Core Type: " + course.getJSONObject("details").get("attributes").toString()
+							+ "\n";
 				}
 				if (course.getJSONObject("details").has("vector")) {
-					output = "Vector: " + course.getJSONObject("details").get("vector").toString();
+					output += "Vector: " + course.getJSONObject("details").get("vector").toString() + "\n";
 				}
 				if (course.getJSONObject("details").has("pre-requisite")) {
-					JSONArray pr = course.getJSONObject("details").getJSONArray("pre-requisite");
-					output += "Pre-Requisite: ";
-					output = jsonArrayStringAdder(output, pr, true);
+					output += "Pre-Requisite: " + course.getJSONObject("details").get("pre-requisite").toString()
+							+ "\n";
 				}
 				if (course.getJSONObject("details").has("co-requisite")) {
-					JSONArray cr = course.getJSONObject("details").getJSONArray("co-requisite");
-					output += "Co-Requisite: ";
-					output = jsonArrayStringAdder(output, cr, true);
+					output += "Co-Requisite: " + course.getJSONObject("details").get("co-requisite").toString() + "\n";
 				}
 				if (course.getJSONObject("details").has("previous code")) {
-					JSONArray pc = course.getJSONObject("details").getJSONArray("previous code");
-					output += "Previous Code: ";
-					output = jsonArrayStringAdder(output, pc, true);
+					output += "Previous Code: " + course.getJSONObject("details").get("previous code").toString() + "\n";
 				}
 				if (course.getJSONObject("details").has("exclusion")) {
-					JSONArray ex = course.getJSONObject("details").getJSONArray("exclusion");
-					output += "Exclusion: ";
-					output = jsonArrayStringAdder(output, ex, true);
+					output += "Exclusion: " + course.getJSONObject("details").get("exclusion").toString() + "\n";;
 				}
 				break;
 			case "qt":
