@@ -57,18 +57,37 @@ public class courseInfoController {
 			case "qt":
 				JSONArray timetable = course.getJSONArray("sections");
 				output = course.get("id").toString() + " - " + course.get("name").toString() + "\n";
-				for(int n = 0; n < timetable.length(); n++)
-				{
+				for (int n = 0; n < timetable.length(); n++) {
 					JSONObject schedule_item = timetable.getJSONObject(n);
 					String name = schedule_item.get("name").toString();
 					String wait = schedule_item.get("wait").toString();
 					String quota = schedule_item.get("quota").toString();
 					String avail = schedule_item.get("avail").toString();
 					String enrol = schedule_item.get("enrol").toString();
-					output += "-------------------\nSection "+name+"\n"+"Quota\tEnrolled\tAvailable\tWaiting\n"+quota+"\t"+enrol+"\t"+avail+"\t"+wait+"\n";
+					output += "-------------------\nSection " + name + "\n" + "Quota\tEnrolled\tAvailable\tWaiting\n"
+							+ quota + "\t" + enrol + "\t" + avail + "\t" + wait + "\n";
 				}
 				break;
 			case "sch":
+				JSONArray timetable_sch = course.getJSONArray("sections");
+				output = course.get("id").toString() + " - " + course.get("name").toString() + "\n";
+				for (int n = 0; n < timetable_sch.length(); n++) {
+					JSONObject schedule_item = timetable_sch.getJSONObject(n);
+					String name = schedule_item.get("name").toString();
+					String instrcu = schedule_item.get("instructors").toString();
+					output += "-------------------\nSection " + name + "\nInstructors: " + instrcu + "\n";
+					JSONArray times = schedule_item.getJSONArray("classes");
+					for (int m = 0; m < times.length(); m++) {
+						JSONObject class_item = times.getJSONObject(m);
+						String datetime = class_item.get("datetime").toString();
+						String location = class_item.get("location").toString();
+						if (times.length() > 1) {
+							output += "\nClass " + String.valueOf(m + 1) + "\n";
+						}
+						output += "Time: " + datetime + "\nLocation: " + location;
+
+					}
+				}
 				break;
 			default:
 				output = ERROR_NOT_FOUND_OPTION;
