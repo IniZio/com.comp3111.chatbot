@@ -31,27 +31,13 @@ public class courseInfoController {
 						: dc.substring(0, MAX_CHAR) + "...";
 				output = course.get("id").toString() + " - " + course.get("name").toString() + "\n\nDescription:\n"
 						+ trim_dc + "\n\nCredit: " + course.get("credit").toString() + "\n";
-				if (course.getJSONObject("details").has("attributes")) {
-					output += "Common Core Type: " + course.getJSONObject("details").get("attributes").toString()
-							+ "\n";
-				}
-				if (course.getJSONObject("details").has("vector")) {
-					output += "Vector: " + course.getJSONObject("details").get("vector").toString() + "\n";
-				}
-				if (course.getJSONObject("details").has("pre-requisite")) {
-					output += "Pre-Requisite: " + course.getJSONObject("details").get("pre-requisite").toString()
-							+ "\n";
-				}
-				if (course.getJSONObject("details").has("co-requisite")) {
-					output += "Co-Requisite: " + course.getJSONObject("details").get("co-requisite").toString() + "\n";
-				}
-				if (course.getJSONObject("details").has("previous code")) {
-					output += "Previous Code: " + course.getJSONObject("details").get("previous code").toString()
-							+ "\n";
-				}
-				if (course.getJSONObject("details").has("exclusion")) {
-					output += "Exclusion: " + course.getJSONObject("details").get("exclusion").toString() + "\n";
-					;
+				String[] detail_list = {"Attributes","Vector","Pre-Requisite", "Previous Code", "Exclusion"};
+				for(String detail_item: detail_list ){
+					String s_item = detail_item.toLowerCase();
+					if (course.getJSONObject("details").has(s_item)) {
+						output += detail_item+": " + course.getJSONObject("details").get(s_item).toString()
+								+ "\n";
+					}
 				}
 				break;
 			case "qt":
