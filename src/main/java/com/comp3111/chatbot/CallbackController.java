@@ -455,6 +455,8 @@ public class CallbackController {
     }
 
 	private void safeReply(String replyToken, String reply) {
+		if (replyToken.equals("xxxx"))
+			return;
 		this.replyText(replyToken, reply);
 	}
 

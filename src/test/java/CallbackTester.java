@@ -35,17 +35,44 @@ import com.linecorp.bot.model.event.FollowEvent;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.MessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
+import com.linecorp.bot.model.event.source.UserSource;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.LineBotMessages;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import java.time.Instant;
 
+
+import com.linecorp.bot.model.event.message.MessageContent;
+import com.linecorp.bot.model.event.source.Source;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { CallbackTester.class, CallbakcController.class, SQLDatabaseEngine.class })
+@SpringBootTest(classes = { CallbackTester.class, CallbackController.class, SQLDatabaseEngine.class })
 public class CallbackTester {
 
+	@Autowired
+	private CallbackController callback;
+	
+	TextMessageContent tester = new TextMessageContent("ABCD", "hi");// id & message text
+	Source source = new UserSource("ABCD");		//user id
+	Instant now = Instant.now();		//timestamp
+	String token = "xxxx";	//token
+	
+	
+	MessageEvent<TextMessageContent> event = new MessageEvent<TextMessageContent> (token, source, tester, now);
+	
+	
+	@Test
+	public void testMenu() throws Exception {
+		boolean thrown = false;
+		try {
+			callback.handleTextMessageEvent(event);
+		} catch (Exception e) {
+			thrown = true;
+		}
+		assertThat(!thrown);
+	}
 	
 }
