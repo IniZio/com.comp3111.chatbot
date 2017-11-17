@@ -243,7 +243,7 @@ public class CallbackController {
             switch (action) {
                 case ACTION.PEOPLE_INPUT: {
                     String reply ="Who do you want to find? Please enter his/her full name or ITSC.";
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.PEOPLE_SEARCH);
                     break;
                 }
@@ -282,13 +282,13 @@ public class CallbackController {
                         results.append("\nToo many results...");
                     }
                     replyPeople = results.toString();
-                    this.replyText(replyToken, replyPeople);
+                    safeReply(replyToken, replyPeople);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
                     break;
                 }
                 case ACTION.ROOM_INPUT: {
                     String reply ="What room do you want to find? Please enter the room number.";                    
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.ROOM_SEARCH);
                     break;
                 }
@@ -298,14 +298,14 @@ public class CallbackController {
                         LiftAdvisor liftAdvisor = new LiftAdvisor(text);
                         if (liftAdvisor.noRoomNumberDetected()){
                             reply = "No room number detected. Please enter number along with keyword room or rm";
-                            this.replyText(replyToken, reply);
+                            safeReply(replyToken, reply);
                             break;
                         }
                         reply = liftAdvisor.getReplyMessage();
                     }catch (Exception e){
                         reply = "error";
                     }
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);                   
                     break;
                 }
@@ -317,7 +317,7 @@ public class CallbackController {
                         reply = "Exception occur";
                     }
                     log.info("Returns echo message {}: {}", replyToken, reply);
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.OPENINGHOUR_SEARCH);                                       
                     break;
                 }
@@ -328,7 +328,7 @@ public class CallbackController {
                     } catch (Exception e) {
                         reply = "Cannot find given facility";
                     }
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
                     break;
                 }
@@ -367,7 +367,7 @@ public class CallbackController {
                         }
                         default: {
                             String reply = "Invalid bus number.";
-                            this.replyText(replyToken, reply);
+                            safeReply(replyToken, reply);
                             db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS);
                             handleNextAction(userId, replyToken, text, db);
                             return true;
@@ -388,7 +388,7 @@ public class CallbackController {
                             } catch (Exception e){
                                 replyMessage = "error";
                             }
-                            this.replyText(replyToken, replyMessage);
+                            safeReply(replyToken, replyMessage);
                             db.storeAction(userId, text, ACTION.EXIT_MAIN);
                             break;
                         }
@@ -403,7 +403,7 @@ public class CallbackController {
                             } catch (Exception e){
                                 replyMessage = "error";
                             }
-                            this.replyText(replyToken, replyMessage);
+                            safeReply(replyToken, replyMessage);
                             db.storeAction(userId, text, ACTION.EXIT_MAIN);
                             break;
                         }
@@ -418,7 +418,7 @@ public class CallbackController {
                             } catch (Exception e){
                                 replyMessage = "error";
                             }
-                            this.replyText(replyToken, replyMessage);
+                            safeReply(replyToken, replyMessage);
                             db.storeAction(userId, text, ACTION.EXIT_MAIN);
                             break;
                         }
@@ -433,7 +433,7 @@ public class CallbackController {
                             } catch (Exception e){
                                 replyMessage = "error";
                             }
-                            this.replyText(replyToken, replyMessage);
+                            safeReply(replyToken, replyMessage);
                             db.storeAction(userId, text, ACTION.EXIT_MAIN);
                             break;
                         }
@@ -453,6 +453,10 @@ public class CallbackController {
         }
         return true;
     }
+
+	private void safeReply(String replyToken, String reply) {
+		this.replyText(replyToken, reply);
+	}
 
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
@@ -546,10 +550,7 @@ public class CallbackController {
                     +"g) Deadline list (WIP)\n"
                     +"h) Set notifications (WIP)\n";
                 log.info("Returns  message {}: {}", replyToken, default_reply);
-                this.replyText(
-                        replyToken,
-                        default_reply
-                );
+			safeReply(replyToken, default_reply);
                 break;
         }
     }
