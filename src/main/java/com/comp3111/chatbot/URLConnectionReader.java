@@ -22,14 +22,14 @@ public class URLConnectionReader {
 	 * Searches a HKSUT staff or student on "http://www.ust.hk/search/{@param}/?sopt=people".
 	 * @param args A string containing the name or ITSC of a HKSUT staff or student.
 	 * @return A list of matched staffs or students.
-	 * @throws Exception if the input name or ITSC is longer than 20 characters.
+	 * @throws Exception if cannot connect the link.
 	 */
     public PeopleList SearchPeople(String args) throws Exception {
-    		if (args.length()>20)
-    			throw new Exception();
 	    	String s1=args.replace(" ", "%20");
     		Document doc = Jsoup.connect("http://www.ust.hk/search/"+s1+"/?sopt=people").get();
     		//Document doc = Jsoup.connect("http://www.ust.hk/search/a%20b%20c/?sopt=people").get();
+    		if (doc==null)
+    			throw new Exception();
     		Element content = doc.getElementById("p-s-table");
     	    Elements inputElements = content.getElementsByTag("td"); 
 
