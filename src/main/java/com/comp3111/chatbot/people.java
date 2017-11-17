@@ -17,12 +17,12 @@ public class people{
 	private String room;
 	/**
 	 * Constructor.
-	 * @param title
-	 * @param name
-	 * @param email
-	 * @param phone
-	 * @param department
-	 * @param room
+	* @param title A string containing the title.
+	* @param name A string containing the name.
+	* @param email A string containing the email address.
+	* @param phone A string containing the phone number.
+	* @param department A string containing the department.
+	* @param room A string containing the room number.
 	 */
 	public people( String title, String name,  String email,  String phone,
 			 String department,  String room){
