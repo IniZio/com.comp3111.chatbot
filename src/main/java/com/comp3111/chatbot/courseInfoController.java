@@ -64,8 +64,9 @@ public class courseInfoController {
 					String quota = schedule_item.get("quota").toString();
 					String avail = schedule_item.get("avail").toString();
 					String enrol = schedule_item.get("enrol").toString();
-					output += "-------------------\nSection " + name + "\n" + "Quota\tEnrolled\tAvailable\tWaiting\n"
-							+ quota + "\t" + enrol + "\t" + avail + "\t" + wait + "\n";
+					output += "\nSection " + name + "\n" + "Quota\tEnrolled\tAvailable\tWaiting\n";
+					String quota_data = String.format("%-6s%-9s%-10s%-7s", quota, enrol, avail, wait);
+					output += quota_data;
 				}
 				break;
 			case "sch":
@@ -75,7 +76,7 @@ public class courseInfoController {
 					JSONObject schedule_item = timetable_sch.getJSONObject(n);
 					String name = schedule_item.get("name").toString();
 					String instrcu = schedule_item.get("instructors").toString();
-					output += "-------------------\nSection " + name + "\nInstructors: " + instrcu + "\n";
+					output += "\n\nSection " + name + "\nInstructors: " + instrcu + "\n";
 					JSONArray times = schedule_item.getJSONArray("classes");
 					for (int m = 0; m < times.length(); m++) {
 						JSONObject class_item = times.getJSONObject(m);
@@ -85,7 +86,6 @@ public class courseInfoController {
 							output += "\nClass " + String.valueOf(m + 1) + "\n";
 						}
 						output += "Time: " + datetime + "\nLocation: " + location;
-
 					}
 				}
 				break;
