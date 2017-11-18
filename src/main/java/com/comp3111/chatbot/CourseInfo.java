@@ -10,22 +10,43 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-public class courseInfoController {
-	private static String ERROR_NOT_FOUND_COURSE = "Sorry, the course is not found. Do you mean....";
+public class CourseInfo {
+	private static String ERROR_NOT_FOUND_COURSE = "Sorry, the course is not found or not offered in the current semester. Do you mean....";
 	private static String ERROR_NOT_FOUND_OPTION = "ERROR: no such option";
 	private static int MAX_CHAR = 300;
 
-	static String courseSearch(String text, String options) throws JSONException, MalformedURLException, IOException {
+	private String input;
+	private OPTIONS options;
+	public enum OPTIONS{
+		OVERVIEW, QUOTA, SCHEDULE
+	}
+
+	public CourseInfo(String text, OPTIONS options){
+		this.input = text;
+		this.options = options;
+	}
+
+	public static boolean coursePreChecker(String text){
+		//TODO
+		return true;
+	}
+	public static String[] similarCourseRecommendation(String text){
+		String[] result_course_list = {};
+		//TODO
+		return result_course_list;
+	}
+
+	public String courseSearch() throws JSONException, MalformedURLException, IOException {
 		try {
 			URL data_url = new URL("http://api.patrickwu.cf/courses_dict.json");
 			InputStreamReader in = new InputStreamReader(data_url.openStream());
 
 			JSONTokener tokener = new JSONTokener(in);
 			JSONObject obj = new JSONObject(tokener);
-			JSONObject course = ((JSONObject) obj).getJSONObject("courses").getJSONObject(text);
+			JSONObject course = ((JSONObject) obj).getJSONObject("courses").getJSONObject(this.input);
 			String output = "";
 			switch (options) {
-			case "ov":
+			case OVERVIEW:
 				String dc = course.getJSONObject("details").get("description").toString();
 				String trim_dc = (dc.length() < MAX_CHAR) ? dc.substring(0, dc.length())
 						: dc.substring(0, MAX_CHAR) + "...";
@@ -40,7 +61,7 @@ public class courseInfoController {
 					}
 				}
 				break;
-			case "qt":
+			case QUOTA:
 				JSONArray timetable = course.getJSONArray("sections");
 				output = course.get("id").toString() + " - " + course.get("name").toString() + "\n";
 				for (int n = 0; n < timetable.length(); n++) {
@@ -55,7 +76,7 @@ public class courseInfoController {
 					output += quota_data;
 				}
 				break;
-			case "sch":
+			case SCHEDULE:
 				JSONArray timetable_sch = course.getJSONArray("sections");
 				output = course.get("id").toString() + " - " + course.get("name").toString() + "\n";
 				for (int n = 0; n < timetable_sch.length(); n++) {
@@ -81,19 +102,19 @@ public class courseInfoController {
 			}
 			if (output == "") {
 				//doing not_found_course action
-				output = ERROR_NOT_FOUND_COURSE + "Status: Normal";
+				output = ERROR_NOT_FOUND_COURSE;
 			}
 
 			return output;
 		} catch (JSONException e) {
-			//return ERROR_NOT_FOUND_COURSE;
-			return "ERROR occured:" + e;
+			String info = ERROR_NOT_FOUND_COURSE;
+			return info;
 		} catch (Exception e) {
 			return "ERROR occured:" + e;
 		}
 	}
 
-	private static String jsonArrayStringAdder(String input, JSONArray jArr, boolean IsKey) {
+	private String jsonArrayStringAdder(String input, JSONArray jArr, boolean IsKey) {
 		for (int i = 0; i < jArr.length(); i++) {
 			if (!IsKey) {
 				input += jArr.get(i);
