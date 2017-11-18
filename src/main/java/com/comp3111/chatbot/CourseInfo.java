@@ -21,6 +21,11 @@ public class CourseInfo {
 		OVERVIEW, QUOTA, SCHEDULE
 	}
 
+	public CourseInfo(){
+		this.input = "";
+		this.options = null;
+	}
+
 	public CourseInfo(String text, OPTIONS options){
 		this.input = text;
 		this.options = options;

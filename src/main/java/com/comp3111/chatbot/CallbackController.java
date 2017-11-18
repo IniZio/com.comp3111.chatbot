@@ -452,7 +452,7 @@ public class CallbackController {
                     final Matcher matcher = pattern.matcher(origin);
                     matcher.find();
                     String co_name = matcher.group(0).toUpperCase();
-                    CourseInfo course_info;
+                    CourseInfo course_info =  new CourseInfo();
                     if (text.contains("overview")) {
                         course_info = new CourseInfo(co_name, OPTIONS.OVERVIEW);
                     } else if (text.contains("quota") || text.contains("seat") || text.contains("place")) {
@@ -506,7 +506,6 @@ public class CallbackController {
                 log.info(e.toString());
             }
             handleNextAction(userId, replyToken, text, db);
-            break;
             break;
 
         case "b": //provide facilities time
