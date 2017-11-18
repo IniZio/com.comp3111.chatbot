@@ -312,7 +312,7 @@ public class CallbackController {
                 case ACTION.OPENINGHOUR_CHOOSE: {
                     String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
                     try {
-                        reply += db.showFacilitiesChoices();
+                        reply += db.showChoice(ACTION.OPENINGHOUR_CHOOSE);
                     } catch (Exception e) {
                         reply = "Exception occur";
                     }
@@ -326,7 +326,30 @@ public class CallbackController {
                     try {
                         reply = db.openingHourSearch(text);
                     } catch (Exception e) {
-                        reply = "Cannot find given facility";
+                        reply = "Cannot find given facility.";
+                    }
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                    break;
+                }
+                case ACTION.LINK_CHOOSE: {
+                    String reply = "Which link do you want to find? Please enter a number in front of the choice.\n";
+                    try {
+                        reply += db.showChoice(ACTION.LINK_CHOOSE);
+                    } catch (Exception e) {
+                        reply = "Exception occur";
+                    }
+                    log.info("Returns echo message {}: {}", replyToken, reply);
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.LINK_SEARCH);                                       
+                    break;
+                }
+                case ACTION.LINK_SEARCH: {
+                    String reply;
+                    try {
+                        reply = db.linkSearch(text);
+                    } catch (Exception e) {
+                        reply = "Cannot find given link.";
                     }
                     this.replyText(replyToken, reply);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
@@ -504,21 +527,10 @@ public class CallbackController {
                 handleNextAction(userId, replyToken, text, db);
                 break;
 
-            // case "c":		// suggestedLinks
-            //     reply ="Which link do you want to find?\n"
-            //     +"1) Register for a locker\n"
-            //     +"2) Register for courses\n"
-            //     +"3) Check grades\n"
-            //     +"4) Find school calendar\n"
-            //     +"5) Book library rooms\n"
-            //     +"6) Find lecture materials\n";
-                
-            //     this.replyText(
-            //         replyToken,
-            //         reply
-            //         );
-            //         // get input and search for links
-            //     break;
+            case "c":		// suggestedLinks
+                try { db.storeAction(userId, text, ACTION.LINK_CHOOSE); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
             
             case "d":		//find people
                 try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}

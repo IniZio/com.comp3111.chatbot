@@ -46,7 +46,7 @@ public class SQLDatabaseEngine {
 		throw new Exception("NOT FOUND");
 	}
 	 
-	 String showFacilitiesChoices() throws Exception {
+	 String linkSearch(String text) throws Exception {
 		String result = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -54,7 +54,45 @@ public class SQLDatabaseEngine {
 
 		try {
 			connection = getConnection();
-			stmt = connection.prepareStatement("SELECT * FROM facilities");
+			stmt = connection.prepareStatement("SELECT * FROM links WHERE index=?");
+			int n = Integer.parseInt(text);
+			stmt.setInt(1, n);
+			rs = stmt.executeQuery();
+			rs.next();
+			result = "You can go to " + rs.getString(3);
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException: ", e2.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+
+		if(result!=null)
+			return result;
+		throw new Exception("NOT FOUND");
+	}
+	 
+	 
+	 String showChoice(String control) throws Exception {
+		String result = null;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = getConnection();
+			if (control.equals(ACTION.OPENINGHOUR_CHOOSE))
+				stmt = connection.prepareStatement("SELECT * FROM facilities");
+			else if (control.equals(ACTION.LINK_CHOOSE))
+				stmt = connection.prepareStatement("SELECT * FROM links");
 			rs = stmt.executeQuery();
 
 			while(rs.next())
