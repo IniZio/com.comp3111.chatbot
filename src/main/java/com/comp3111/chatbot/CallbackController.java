@@ -80,68 +80,6 @@ public class CallbackController {
         handleTextContent(event.getReplyToken(), event, message);
     }
 
-    @EventMapping
-    public void handleStickerMessageEvent(MessageEvent<StickerMessageContent> event) {
-        handleSticker(event.getReplyToken(), event.getMessage());
-    }
-
-    @EventMapping
-    public void handleLocationMessageEvent(MessageEvent<LocationMessageContent> event) {
-        LocationMessageContent locationMessage = event.getMessage();
-        reply(event.getReplyToken(), new LocationMessage(
-                locationMessage.getTitle(),
-                locationMessage.getAddress(),
-                locationMessage.getLatitude(),
-                locationMessage.getLongitude()
-        ));
-    }
-
-    @EventMapping
-    public void handleImageMessageEvent(MessageEvent<ImageMessageContent> event) throws IOException {
-        // You need to install ImageMagick
-        handleHeavyContent(
-                event.getReplyToken(),
-                event.getMessage().getId(),
-                responseBody -> {
-                    DownloadedContent jpg = saveContent("jpg", responseBody);
-                    DownloadedContent previewImg = createTempFile("jpg");
-                    system(
-                            "convert",
-                            "-resize", "240x",
-                            jpg.path.toString(),
-                            previewImg.path.toString());
-                    reply(((MessageEvent) event).getReplyToken(),
-                          new ImageMessage(jpg.getUri(), jpg.getUri()));
-                });
-    }
-
-    @EventMapping
-    public void handleAudioMessageEvent(MessageEvent<AudioMessageContent> event) throws IOException {
-        handleHeavyContent(
-                event.getReplyToken(),
-                event.getMessage().getId(),
-                responseBody -> {
-                    DownloadedContent mp4 = saveContent("mp4", responseBody);
-                    reply(event.getReplyToken(), new AudioMessage(mp4.getUri(), 100));
-                });
-    }
-
-    @EventMapping
-    public void handleVideoMessageEvent(MessageEvent<VideoMessageContent> event) throws IOException {
-        // You need to install ffmpeg and ImageMagick.
-        handleHeavyContent(
-                event.getReplyToken(),
-                event.getMessage().getId(),
-                responseBody -> {
-                    DownloadedContent mp4 = saveContent("mp4", responseBody);
-                    DownloadedContent previewImg = createTempFile("jpg");
-                    system("convert",
-                           mp4.path + "[0]",
-                           previewImg.path.toString());
-                    reply(((MessageEvent) event).getReplyToken(),
-                          new VideoMessage(mp4.getUri(), previewImg.uri));
-                });
-    }
 
     @EventMapping
     public void handleUnfollowEvent(UnfollowEvent event) {
@@ -202,24 +140,7 @@ public class CallbackController {
         this.reply(replyToken, new TextMessage(message));
     }
 
-    private void handleHeavyContent(String replyToken, String messageId,
-                                    Consumer<MessageContentResponse> messageConsumer) {
-        final MessageContentResponse response;
-        try {
-            response = lineMessagingClient.getMessageContent(messageId)
-                                          .get();
-        } catch (InterruptedException | ExecutionException e) {
-            reply(replyToken, new TextMessage("Cannot get image: " + e.getMessage()));
-            throw new RuntimeException(e);
-        }
-        messageConsumer.accept(response);
-    }
 
-    private void handleSticker(String replyToken, StickerMessageContent content) {
-        reply(replyToken, new StickerMessage(
-                content.getPackageId(), content.getStickerId())
-        );
-    }
 
     private Boolean handleNextAction(String userId, String replyToken, String text, SQLDatabaseEngine db)
         throws Exception
