@@ -1,5 +1,6 @@
 package com.comp3111.chatbot;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -35,44 +36,29 @@ import com.linecorp.bot.model.event.FollowEvent;
 import com.linecorp.bot.model.event.MessageEvent;
 import com.linecorp.bot.model.event.message.MessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
-import com.linecorp.bot.model.event.source.UserSource;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.spring.boot.annotation.LineBotMessages;
 
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import java.time.Instant;
 
-
-import com.linecorp.bot.model.event.message.MessageContent;
-import com.linecorp.bot.model.event.source.Source;
+import com.comp3111.chatbot.*;;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { CallbackTester.class, CallbackController.class, SQLDatabaseEngine.class })
+@SpringBootTest(classes = { CallbackTester.class, SQLDatabaseEngine.class })
 public class CallbackTester {
-
 	@Autowired
-	private CallbackController callback;
-	
-	TextMessageContent tester = new TextMessageContent("ABCD", "hi");// id & message text
-	Source source = new UserSource("ABCD");		//user id
-	Instant now = Instant.now();		//timestamp
-	String token = "xxxx";	//token
-	
-	
-	MessageEvent<TextMessageContent> event = new MessageEvent<TextMessageContent> (token, source, tester, now);
-	
+	private SQLDatabaseEngine databaseEngine;
 	
 	@Test
-	public void testMenu() throws Exception {
+	public void testStoreAction() throws Exception {
 		boolean thrown = false;
 		try {
-			callback.handleTextMessageEvent(event);
+			this.databaseEngine.storeAction("fcf6bd45d24edc510b079fdff54e4d0b", "hi", "exit_to_main");;
 		} catch (Exception e) {
 			thrown = true;
 		}
 		assertThat(!thrown);
 	}
-	
 }
