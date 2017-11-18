@@ -8,21 +8,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LiftAdvisor {
-    private String queryRoomNumber;
+    private String queryRoom;
 
     public LiftAdvisor(String text){
-        String[] textBreakdown = text.split("\\D+");
-        this.queryRoomNumber = "NA";
-        for (String numberFromText:textBreakdown){
-            if (!numberFromText.equals("")) {
-                this.queryRoomNumber = numberFromText;
-                break;
+        this.queryRoom = text.trim();
+        String[] textBreakdown = null;
+        if (text.contains("room") || text.contains("rm")) {
+            textBreakdown = text.split("\\D+");
+            for (String numberFromText : textBreakdown) {
+                if (!numberFromText.equals("")) {
+                    this.queryRoom = numberFromText;
+                    break;
+                }
             }
         }
     }
 
     private List<String> getSuggestedResults() throws Exception{
-        URL url = new URL("http://pathadvisor.ust.hk/phplib/search.php?keyword="+ queryRoomNumber +"&floor=Overall&type=lift&same_floor=yes");
+        URL url = new URL("http://pathadvisor.ust.hk/phplib/search.php?keyword="+ queryRoom +"&floor=Overall&type=lift&same_floor=yes");
         String queryReturnedString = IOUtils.toString(url, Charset.defaultCharset());
         List<String> suggestedResults = new ArrayList<>();
         for (String suggestedResult:queryReturnedString.split("\\n")) {
@@ -31,10 +34,6 @@ public class LiftAdvisor {
             }
         }
         return suggestedResults;
-    }
-
-    public boolean noRoomNumberDetected(){
-        return this.queryRoomNumber.equals("NA");
     }
 
     public String getReplyMessage() throws Exception{

@@ -296,17 +296,12 @@ public class CallbackController {
                     String reply;
                     try {
                         LiftAdvisor liftAdvisor = new LiftAdvisor(text);
-                        if (liftAdvisor.noRoomNumberDetected()){
-                            reply = "No room number detected. Please enter number along with keyword room or rm";
-                            this.replyText(replyToken, reply);
-                            break;
-                        }
                         reply = liftAdvisor.getReplyMessage();
                     }catch (Exception e){
                         reply = "error";
                     }
                     this.replyText(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);                   
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
                     break;
                 }
                 case ACTION.OPENINGHOUR_CHOOSE: {
@@ -318,7 +313,7 @@ public class CallbackController {
                     }
                     log.info("Returns echo message {}: {}", replyToken, reply);
                     this.replyText(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.OPENINGHOUR_SEARCH);                                       
+                    db.storeAction(userId, text, ACTION.OPENINGHOUR_SEARCH);
                     break;
                 }
                 case ACTION.OPENINGHOUR_SEARCH: {
@@ -456,14 +451,14 @@ public class CallbackController {
 
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
-    	
+
         String text = content.getText();
-        text=text.toLowerCase();        
-        
+        text=text.toLowerCase();
+
         log.info("Got text message from {}: {}", replyToken, text);
 
         // 1. Check for stored next action...
-        String userId = event.getSource().getUserId();			
+        String userId = event.getSource().getUserId();
         SQLDatabaseEngine db = new SQLDatabaseEngine();
 
         // ... then leave if the action is done
@@ -498,7 +493,7 @@ public class CallbackController {
                 }
                 break;
             }
-            
+
             case "b":		//provide facilities time
                 try { db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
@@ -512,14 +507,14 @@ public class CallbackController {
             //     +"4) Find school calendar\n"
             //     +"5) Book library rooms\n"
             //     +"6) Find lecture materials\n";
-                
+
             //     this.replyText(
             //         replyToken,
             //         reply
             //         );
             //         // get input and search for links
             //     break;
-            
+
             case "d":		//find people
                 try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
@@ -529,7 +524,7 @@ public class CallbackController {
                 try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
                 break;
-            
+
             case "f":
                 try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
@@ -601,12 +596,12 @@ public class CallbackController {
         Path path;
         String uri;
     }
-    
+
 	public CallbackController() {
 		database = new SQLDatabaseEngine();
-		
+
 	}
 
 	private SQLDatabaseEngine database;
-	
+
 }
