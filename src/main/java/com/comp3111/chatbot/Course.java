@@ -21,7 +21,6 @@ public class Course {
         this.course_name = name;
         URL data_url = new URL("http://api.patrickwu.cf/courses_list.json");
         InputStreamReader in = new InputStreamReader(data_url.openStream());
-
         JSONTokener tokener = new JSONTokener(in);
         this.obj = new JSONArray(tokener);
     }
