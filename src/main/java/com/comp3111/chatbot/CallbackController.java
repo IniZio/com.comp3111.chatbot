@@ -144,6 +144,23 @@ public class CallbackController {
         this.reply(replyToken, new TextMessage(message));
     }
 
+    private void printMainMenu (String replyToken) {
+        String default_reply ="Which information do you want to know?\n"
+        +"a) Course information (WIP)\n"
+        +"b) Restaurant/Facilities opening hours\n"
+        +"c) Links suggestions (WIP)\n"
+        +"d) Find people\n"
+        +"e) Lift advisor\n"
+        +"f) Bus arrival/Departure time\n"
+        +"g) Deadline list (WIP)\n"
+        +"h) Set notifications (WIP)\n";
+        log.info("Returns  message {}: {}", replyToken, default_reply);
+        safeReply(
+                replyToken,
+                default_reply
+        );
+    }
+
     private Boolean handleNextAction(String userId, String replyToken, String text, SQLDatabaseEngine db)
             throws Exception {
         // SQLDatabaseEngine db = new SQLDatabaseEngine();        
@@ -154,7 +171,7 @@ public class CallbackController {
         String origin = text;
         text = text.toLowerCase();
 
-        log.info("Going to handle action {}, and it is {} null", action, action == null ? "" : "not");
+        log.info("Going to handle action {}, which is {} null", action, action == null ? "" : "not");
         if (action == null || action.equals(ACTION.EXIT_MAIN)) {
             return false;
         }
@@ -162,7 +179,8 @@ public class CallbackController {
         // Exit from action to main menu
         if (text.equals("exit")) {
             db.storeAction(userId, text, ACTION.EXIT_MAIN);
-            handleNextAction(userId, replyToken, text, db);
+            return false;
+            // handleNextAction(userId, replyToken, text, db);
         }
 
         try {
@@ -496,8 +514,8 @@ public class CallbackController {
                 break;
             }
             case "a":
-                try { db.storeAction(userId, text, ACTION.COURSE_SEARCH); } catch (Exception e) {log.info(e.toString());}
-                handleNextAction(userId, replyToken, text, db);
+                try { db.storeAction(userId, text, ACTION.COURSE_INPUT); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);                
                 break;
 
             case "b":		//provide facilities time
@@ -526,20 +544,7 @@ public class CallbackController {
             break;
 
         default:
-            String default_reply ="Which information do you want to know?\n"
-                +"a) Course information (WIP)\n"
-                +"b) Restaurant/Facilities opening hours\n"
-                +"c) Links suggestions (WIP)\n"
-                +"d) Find people\n"
-                +"e) Lift advisor\n"
-                +"f) Bus arrival/Departure time\n"
-                +"g) Deadline list (WIP)\n"
-                +"h) Set notifications (WIP)\n";
-            log.info("Returns  message {}: {}", replyToken, default_reply);
-            safeReply(
-                    replyToken,
-                    default_reply
-            );
+            printMainMenu(replyToken);
             break;
         }
     }
