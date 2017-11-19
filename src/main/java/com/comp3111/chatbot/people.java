@@ -2,7 +2,11 @@ package com.comp3111.chatbot;
 
 import lombok.extern.slf4j.Slf4j;
 
-
+/**
+ * Represents a HKUST staff or student.
+ * @author hlmaab
+ *
+ */
 @Slf4j
 public class people{
 	private String title;
@@ -11,7 +15,15 @@ public class people{
 	private String phone;
 	private String department;
 	private String room;
-	
+	/**
+	 * Constructor.
+	* @param title A string containing the title.
+	* @param name A string containing the name.
+	* @param email A string containing the email address.
+	* @param phone A string containing the phone number.
+	* @param department A string containing the department.
+	* @param room A string containing the room number.
+	 */
 	public people( String title, String name,  String email,  String phone,
 			 String department,  String room){
 		this.title=title;
@@ -22,33 +34,55 @@ public class people{
 		this.room=room;
 		
 	}
-	
+	/** 
+	* Gets the title of a staff or student.
+	* @return A string representing the title of a staff or student.
+	*/
 	public String getTitle() {
 		if (this.title.equals(""))
 			return "No info";
 		return this.title;
 	}
-	
+	/** 
+	* Gets the name of a staff or student.
+	* @return A string representing the name of a staff or student.
+	*/
 	public String getName() {
 		if (this.name.equals(""))
 			return "No info";
 		return this.name;
 	}
+	/** 
+	* Gets the email address of a staff or student.
+	* @return A string representing the email address of a staff or student.
+	*/
 	public String getEmail() {
 		if (this.email.equals(""))
 			return "No info";
 		return this.email;
 	}
+	/** 
+	* Gets the phone number of a staff or student.
+	* @return A string representing the phone number of a staff or student.
+	*/
 	public String getPhone() {
 		if (this.phone.equals(""))
 			return "No info";
 		return this.phone;
 	}
+	/** 
+	* Gets the department of a staff or student.
+	* @return A string representing the department of a staff or student.
+	*/
 	public String getDepartment() {
 		if (this.department.equals(""))
 			return "No info";
 		return this.department;
 	}
+	/** 
+	* Gets the room number of a staff.
+	* @return A string representing the room number of a staff.
+	*/
 	public String getRoom() {
 		if (this.room.equals(""))
 			return "No info";
