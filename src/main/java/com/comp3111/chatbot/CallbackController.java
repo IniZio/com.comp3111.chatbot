@@ -268,11 +268,6 @@ public class CallbackController {
                 String reply;
                 try {
                     LiftAdvisor liftAdvisor = new LiftAdvisor(text);
-                    if (liftAdvisor.noRoomNumberDetected()) {
-                        reply = "No room number detected. Please enter number along with keyword room or rm";
-                        this.replyText(replyToken, reply);
-                        break;
-                    }
                     reply = liftAdvisor.getReplyMessage();
                 } catch (Exception e) {
                     reply = "error";
@@ -512,20 +507,10 @@ public class CallbackController {
         String reply = "";
         switch (text) {
         case "a":
-            try {
-                db.storeAction(userId, text, ACTION.COURSE_SEARCH);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
-            handleNextAction(userId, replyToken, text, db);
+            try { db.storeAction(userId, text, ACTION.COURSE_SEARCH); } catch (Exception e) {log.info(e.toString());}
             break;
-
-        case "b": //provide facilities time
-            try {
-                db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
+        case "b":		//provide facilities time
+            try { db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
 
@@ -545,30 +530,18 @@ public class CallbackController {
         //         // get input and search for links
         //     break;
 
-        case "d": //find people
-            try {
-                db.storeAction(userId, text, ACTION.PEOPLE_INPUT);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
+        case "d":		//find people
+            try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
 
         case "e":
-            try {
-                db.storeAction(userId, text, ACTION.ROOM_INPUT);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
+            try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
 
         case "f":
-            try {
-                db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
+            try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
 
@@ -635,11 +608,11 @@ public class CallbackController {
         String uri;
     }
 
-    public CallbackController() {
-        database = new SQLDatabaseEngine();
+	public CallbackController() {
+		database = new SQLDatabaseEngine();
 
-    }
+	}
 
-    private SQLDatabaseEngine database;
+	private SQLDatabaseEngine database;
 
 }
