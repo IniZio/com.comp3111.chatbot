@@ -23,16 +23,29 @@ public class CourseInfo {
 		OVERVIEW, QUOTA, SCHEDULE
 	}
 
+	/**
+	 * Empty Constructor.
+	 */
 	public CourseInfo() {
 		this.input = "";
 		this.options = null;
 	}
 
+	/**
+	 * Constructor.
+	 * @param text A string containing course code.
+	 * @param options A enumeration for information catrgories.
+	 */
 	public CourseInfo(String text, OPTIONS options) {
 		this.input = text;
 		this.options = options;
 	}
 
+	/**
+	 * Print Overview Information of a course.
+	 * @param course A JSON Object of course.
+	 * @return A list of strings containing overview information of a course.
+	 */
 	private List<String> OverviewPrinter(JSONObject course) {
 		String output = "";
 		String dc = course.getJSONObject("details").get("description").toString();
@@ -51,6 +64,11 @@ public class CourseInfo {
 		return outputList;
 	}
 
+	/**
+	 * Print Quota Information of a course.
+	 * @param course A JSON Object of course.
+	 * @return A list of strings containing quota information of a course.
+	 */
 	private List<String> QuotaPrinter(JSONObject course) {
 		List<String> outputList = new ArrayList<>();
 		String output = "";
@@ -74,6 +92,11 @@ public class CourseInfo {
 		return outputList;
 	}
 
+	/**
+	 * Print Schedule Information of a course.
+	 * @param course A JSON Object of course.
+	 * @return A list of strings containing schedule information of a course.
+	 */
 	private List<String> SchedulePrinter(JSONObject course) {
 		List<String> outputList = new ArrayList<>();
 		String output = "";
@@ -102,6 +125,11 @@ public class CourseInfo {
 		return outputList;
 	}
 
+	/**
+	 * Search course and print the information according to OPTIONS.
+	 * @return A list of strings containing selected information of a course.
+	 * @exception JSONException,MalformedURLException,IOException
+	 */
 	public List<String> courseSearch() throws JSONException, MalformedURLException, IOException {
 		URL data_url = new URL("http://api.patrickwu.cf/courses_dict.json");
 		InputStreamReader in = new InputStreamReader(data_url.openStream());
