@@ -23,10 +23,18 @@ public class Course {
     private String course_name;
     private JSONArray obj = null;
 
+    /**
+     * Empty Constructor.
+     */
     public Course() {
         this.course_name = "";
     }
 
+    /**
+     * Constructor.
+     * @param name A string containing the course name.
+     * @exception IOException,MalformedURLException
+     */
     public Course(String name) throws IOException, MalformedURLException {
         this.course_name = name;
         URL data_url = new URL("http://api.patrickwu.cf/courses_list.json");
@@ -35,17 +43,29 @@ public class Course {
         this.obj = new JSONArray(tokener);
     }
 
+    /**
+     * Static function to extract Course Code from text.
+     * @param input A string containing the raw text.
+     * @return A string containing course code.
+     */
     public static String extractCourseFromText(String input) {
         final Pattern pattern = Pattern.compile("([A-Z]|[a-z]){4}(\\s)?\\d{4}([A-Z]|[a-z])?");
         final Matcher matcher = pattern.matcher(input);
         matcher.find();
         return matcher.group(0).toUpperCase().replaceAll("\\s+", "");
     }
-
+    /**
+     * Return the Course Name(Course Code)
+     * @return A string containing course code.
+     */
     public String getName() {
         return course_name;
     }
 
+    /**
+     * Check if the course code is valid.
+     * @return A boolean for whether the course code is valid, true for valid, false for invalid.
+     */
     public boolean coursePreChecker() {
         for (int i = 0; i < obj.length(); i++) {
             String course = obj.get(i).toString();
@@ -56,7 +76,10 @@ public class Course {
         }
         return false;
     }
-
+    /**
+     * Recommendation for similar course if course code is not found.
+     * @return A list of strings containing course codes.
+     */
     public List<String> similarCourseRecommendation() {
         Map<String, Integer> result_priority_list = new HashMap<>();
         int count = 0;
