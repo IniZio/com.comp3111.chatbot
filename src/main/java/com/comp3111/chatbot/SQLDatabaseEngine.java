@@ -12,6 +12,13 @@ import java.net.URI;
 
 @Slf4j
 public class SQLDatabaseEngine {
+	/**
+	 * Searches the opening hours of a restaurant and returns it.
+	 * 
+	 * @param text An index which refers to the restaurant queried. 
+	 * @return A string which contains the opening hours of the restaurant.
+	 * @throws Exception if the input number is out of range or invalid.
+	 */
 	 String openingHourSearch(String text) throws Exception {
 		String result = null;
 		Connection connection = null;
@@ -32,9 +39,49 @@ public class SQLDatabaseEngine {
 			log.info("SQLException: ", e2.toString());
 		} finally {
 			try {
-				rs.close();
-				stmt.close();
-				connection.close();
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+
+		if(result!=null)
+			return result;
+		throw new Exception("NOT FOUND");
+	}
+	 /**
+	  * Searches a matched link for the information queried in the database and returns it.
+	  * 
+	  * @param text An index which refers to the information queried. 
+	  * @return	A string which contains the matched link.
+	  * @throws Exception if the input number is out of range or invalid.
+	  */
+	 String linkSearch(String text) throws Exception {
+		String result = null;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = getConnection();
+			stmt = connection.prepareStatement("SELECT * FROM links WHERE index=?");
+			int n = Integer.parseInt(text);
+			stmt.setInt(1, n);
+			rs = stmt.executeQuery();
+			rs.next();
+			result = "You can go to " + rs.getString(3);
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException: ", e2.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			}
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());
@@ -46,7 +93,16 @@ public class SQLDatabaseEngine {
 		throw new Exception("NOT FOUND");
 	}
 	 
-	 String showFacilitiesChoices() throws Exception {
+	 
+	 
+	 /**
+	  * Formulate a list of facilities or choices of suggested links for reply.
+	  * 
+	  * @param control Input can only be either ACTION.OPENINGHOUR_CHOOSE for displaying facilities or ACTION.LINK_CHOOSE for displaying choices of suggested links.
+	  * @return A list of String of facilities or choices for suggested links.
+	  * @throws Exception
+	  */
+	 String showChoice(String control) throws Exception {
 		String result = null;
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -54,7 +110,10 @@ public class SQLDatabaseEngine {
 
 		try {
 			connection = getConnection();
-			stmt = connection.prepareStatement("SELECT * FROM facilities");
+			if (control.equals(ACTION.OPENINGHOUR_CHOOSE))
+				stmt = connection.prepareStatement("SELECT * FROM facilities");
+			else if (control.equals(ACTION.LINK_CHOOSE))
+				stmt = connection.prepareStatement("SELECT * FROM links");
 			rs = stmt.executeQuery();
 
 			while(rs.next())
@@ -70,9 +129,9 @@ public class SQLDatabaseEngine {
 			log.info("SQLException: ", e2.toString());
 		} finally {
 			try {
-				rs.close();
-				stmt.close();
-				connection.close();
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			}
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());
@@ -85,7 +144,14 @@ public class SQLDatabaseEngine {
 			return "NOT FOUND";
 	}
 	
-	
+	 /**
+	  * Stores the current action and message input by the user in the database.
+	  * 
+	  * @param id A String which contains the Line User id.
+	  * @param text	A String which contains the Line message input by the user.
+	  * @param action A String which refers to an ACTION.
+	  * @throws Exception
+	  */
 	public void storeAction(String id, String text, String action) throws Exception{
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -100,16 +166,22 @@ public class SQLDatabaseEngine {
 			log.info("Exception while storing: {}", e.toString());
 		} finally {
 			try {		
-				rs.close();
-				stmt.close();
-				connection.close();	
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			} catch (Exception e) {
 				log.info("Exception while storing: {}", e.toString());
 			}
 		}
 	}		
 
-	
+	/**
+	 * Searches the latest actions of the user by User Id in the database for deciding next route or action.
+	 * 
+	 * @param id A String which contains the Line User id.
+	 * @return A String array which contains the latest action and message input by the user.
+	 * @throws Exception
+	 */
 	
 	public String[] nextAction(String id) throws Exception{
 		String[] next= new String [2];
@@ -144,9 +216,9 @@ public class SQLDatabaseEngine {
 		}
 		finally {
 			try {
-				rs.close();
-				stmt.close();
-				connection.close();
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
 			}
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());

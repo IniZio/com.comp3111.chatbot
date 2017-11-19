@@ -7,22 +7,42 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The LiftAdvisor Class is used to call API from path advisor web and formulates result as a string for reply.
+ *
+ * @author ApplewoodL
+ */
 public class LiftAdvisor {
-    private String queryRoomNumber;
+    private String queryRoom;
 
+
+    /**
+     * Constructor and process user input to instance queryRoom.
+     *
+     * @param text A String which contains the original text from user
+     */
     public LiftAdvisor(String text){
-        String[] textBreakdown = text.split("\\D+");
-        this.queryRoomNumber = "NA";
-        for (String numberFromText:textBreakdown){
-            if (!numberFromText.equals("")) {
-                this.queryRoomNumber = numberFromText;
-                break;
+        this.queryRoom = text.trim();
+        String[] textBreakdown = null;
+        if (text.contains("room") || text.contains("rm")) {
+            textBreakdown = text.split("\\D+");
+            for (String numberFromText : textBreakdown) {
+                if (!numberFromText.equals("")) {
+                    this.queryRoom = numberFromText;
+                    break;
+                }
             }
         }
     }
 
+    /**
+     * Uses external API from path advisor to collect related results and generate list of records.
+     *
+     * @return A list of String of separated related results
+     * @throws Exception
+     */
     private List<String> getSuggestedResults() throws Exception{
-        URL url = new URL("http://pathadvisor.ust.hk/phplib/search.php?keyword="+ queryRoomNumber +"&floor=Overall&type=lift&same_floor=yes");
+        URL url = new URL("http://pathadvisor.ust.hk/phplib/search.php?keyword="+ queryRoom +"&floor=Overall&type=lift&same_floor=yes");
         String queryReturnedString = IOUtils.toString(url, Charset.defaultCharset());
         List<String> suggestedResults = new ArrayList<>();
         for (String suggestedResult:queryReturnedString.split("\\n")) {
@@ -33,10 +53,12 @@ public class LiftAdvisor {
         return suggestedResults;
     }
 
-    public boolean noRoomNumberDetected(){
-        return this.queryRoomNumber.equals("NA");
-    }
-
+    /**
+     * Formulate list from getSuggestedResults() to output String for reply.
+     *
+     * @return A String of formulated related results from original source
+     * @throws Exception
+     */
     public String getReplyMessage() throws Exception{
         String replyMessage = "Room not found.";
         StringBuilder results = new StringBuilder();

@@ -85,48 +85,6 @@ public class CallbackController {
     }
 
     @EventMapping
-    public void handleStickerMessageEvent(MessageEvent<StickerMessageContent> event) {
-        handleSticker(event.getReplyToken(), event.getMessage());
-    }
-
-    @EventMapping
-    public void handleLocationMessageEvent(MessageEvent<LocationMessageContent> event) {
-        LocationMessageContent locationMessage = event.getMessage();
-        reply(event.getReplyToken(), new LocationMessage(locationMessage.getTitle(), locationMessage.getAddress(),
-                locationMessage.getLatitude(), locationMessage.getLongitude()));
-    }
-
-    @EventMapping
-    public void handleImageMessageEvent(MessageEvent<ImageMessageContent> event) throws IOException {
-        // You need to install ImageMagick
-        handleHeavyContent(event.getReplyToken(), event.getMessage().getId(), responseBody -> {
-            DownloadedContent jpg = saveContent("jpg", responseBody);
-            DownloadedContent previewImg = createTempFile("jpg");
-            system("convert", "-resize", "240x", jpg.path.toString(), previewImg.path.toString());
-            reply(((MessageEvent) event).getReplyToken(), new ImageMessage(jpg.getUri(), jpg.getUri()));
-        });
-    }
-
-    @EventMapping
-    public void handleAudioMessageEvent(MessageEvent<AudioMessageContent> event) throws IOException {
-        handleHeavyContent(event.getReplyToken(), event.getMessage().getId(), responseBody -> {
-            DownloadedContent mp4 = saveContent("mp4", responseBody);
-            reply(event.getReplyToken(), new AudioMessage(mp4.getUri(), 100));
-        });
-    }
-
-    @EventMapping
-    public void handleVideoMessageEvent(MessageEvent<VideoMessageContent> event) throws IOException {
-        // You need to install ffmpeg and ImageMagick.
-        handleHeavyContent(event.getReplyToken(), event.getMessage().getId(), responseBody -> {
-            DownloadedContent mp4 = saveContent("mp4", responseBody);
-            DownloadedContent previewImg = createTempFile("jpg");
-            system("convert", mp4.path + "[0]", previewImg.path.toString());
-            reply(((MessageEvent) event).getReplyToken(), new VideoMessage(mp4.getUri(), previewImg.uri));
-        });
-    }
-
-    @EventMapping
     public void handleUnfollowEvent(UnfollowEvent event) {
         log.info("unfollowed this bot: {}", event);
     }
@@ -134,26 +92,26 @@ public class CallbackController {
     @EventMapping
     public void handleFollowEvent(FollowEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Got followed event");
+        safeReply(replyToken, "Got followed event");
     }
 
     @EventMapping
     public void handleJoinEvent(JoinEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Joined " + event.getSource());
+        safeReply(replyToken, "Joined " + event.getSource());
     }
 
     @EventMapping
     public void handlePostbackEvent(PostbackEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param "
+        safeReply(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param "
                 + event.getPostbackContent().getParams().toString());
     }
 
     @EventMapping
     public void handleBeaconEvent(BeaconEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Got beacon message " + event.getBeacon().getHwid());
+        safeReply(replyToken, "Got beacon message " + event.getBeacon().getHwid());
     }
 
     @EventMapping
@@ -162,6 +120,8 @@ public class CallbackController {
     }
 
     private void reply(@NonNull String replyToken, @NonNull Message message) {
+    		if (replyToken.equals("ffffWiB7yP5Zw52FIkcQobQuGDXCTA"))
+    			return;
         reply(replyToken, Collections.singletonList(message));
     }
 
@@ -182,22 +142,6 @@ public class CallbackController {
             message = message.substring(0, 1000 - 2) + "�色��";
         }
         this.reply(replyToken, new TextMessage(message));
-    }
-
-    private void handleHeavyContent(String replyToken, String messageId,
-            Consumer<MessageContentResponse> messageConsumer) {
-        final MessageContentResponse response;
-        try {
-            response = lineMessagingClient.getMessageContent(messageId).get();
-        } catch (InterruptedException | ExecutionException e) {
-            reply(replyToken, new TextMessage("Cannot get image: " + e.getMessage()));
-            throw new RuntimeException(e);
-        }
-        messageConsumer.accept(response);
-    }
-
-    private void handleSticker(String replyToken, StickerMessageContent content) {
-        reply(replyToken, new StickerMessage(content.getPackageId(), content.getStickerId()));
     }
 
     private Boolean handleNextAction(String userId, String replyToken, String text, SQLDatabaseEngine db)
@@ -225,7 +169,7 @@ public class CallbackController {
             switch (action) {
             case ACTION.PEOPLE_INPUT: {
                 String reply = "Who do you want to find? Please enter his/her full name or ITSC.";
-                this.replyText(replyToken, reply);
+                safeReply(replyToken, reply);
                 db.storeAction(userId, text, ACTION.PEOPLE_SEARCH);
                 break;
             }
@@ -241,7 +185,7 @@ public class CallbackController {
 
                 if (resultList == null) {
                     results.append("\nNot found.");
-                    this.replyText(replyToken, results.toString());
+                    safeReply(replyToken, results.toString());
                     break;
                 } else {
                     for (people p : resultList) {
@@ -255,13 +199,13 @@ public class CallbackController {
                     results.append("\nToo many results...");
                 }
                 replyPeople = results.toString();
-                this.replyText(replyToken, replyPeople);
+                safeReply(replyToken, replyPeople);
                 db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 break;
             }
             case ACTION.ROOM_INPUT: {
                 String reply = "What room do you want to find? Please enter the room number.";
-                this.replyText(replyToken, reply);
+                safeReply(replyToken, reply);
                 db.storeAction(userId, text, ACTION.ROOM_SEARCH);
                 break;
             }
@@ -269,28 +213,23 @@ public class CallbackController {
                 String reply;
                 try {
                     LiftAdvisor liftAdvisor = new LiftAdvisor(text);
-                    if (liftAdvisor.noRoomNumberDetected()) {
-                        reply = "No room number detected. Please enter number along with keyword room or rm";
-                        this.replyText(replyToken, reply);
-                        break;
-                    }
                     reply = liftAdvisor.getReplyMessage();
                 } catch (Exception e) {
                     reply = "error";
                 }
-                this.replyText(replyToken, reply);
+                safeReply(replyToken, reply);
                 db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 break;
             }
             case ACTION.OPENINGHOUR_CHOOSE: {
                 String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
                 try {
-                    reply += db.showFacilitiesChoices();
+                    reply += db.showChoice(ACTION.OPENINGHOUR_CHOOSE);
                 } catch (Exception e) {
                     reply = "Exception occur";
                 }
                 log.info("Returns echo message {}: {}", replyToken, reply);
-                this.replyText(replyToken, reply);
+                safeReply(replyToken, reply);
                 db.storeAction(userId, text, ACTION.OPENINGHOUR_SEARCH);
                 break;
             }
@@ -301,7 +240,7 @@ public class CallbackController {
                 } catch (Exception e) {
                     reply = "Cannot find given facility";
                 }
-                this.replyText(replyToken, reply);
+                safeReply(replyToken, reply);
                 db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 break;
             }
@@ -338,7 +277,7 @@ public class CallbackController {
                 }
                 default: {
                     String reply = "Invalid bus number.";
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS);
                     handleNextAction(userId, replyToken, text, db);
                     return true;
@@ -346,74 +285,82 @@ public class CallbackController {
                 }
                 break;
             }
+            case ACTION.LINK_CHOOSE: {
+                String reply = "Which link do you want to find? Please enter a number in front of the choice.\n";
+                try {
+                    reply += db.showChoice(ACTION.LINK_CHOOSE);
+                } catch (Exception e) {
+                    reply = "Exception occur";
+                }
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.LINK_SEARCH);                                       
+                break;
+            }
+            case ACTION.LINK_SEARCH: {
+                String reply;
+                try {
+                    reply = db.linkSearch(text);
+                } catch (Exception e) {
+                    reply = "Cannot find given link.";
+                }
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                break;
+            }
             case ACTION.BUS_SEARCH: {
                 switch (param + " to " + text) {
-                case "91 to diamond hill": {
-                    String replyMessage;
-                    try {
-                        BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
-                        String results = "";
-                        results = results + "Time: ";
-                        results = results + busETARequestHandler.getReplyMessage();
-                        replyMessage = results;
-                    } catch (Exception e) {
-                        replyMessage = "error";
+                    case "91 to diamond hill": {
+                        String replyMessage;
+                        try {
+                            BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
+                            String results = "";
+                            results = results + "Time: ";
+                            results = results + busETARequestHandler.getReplyMessage();
+                            replyMessage = results;
+                        } catch (Exception e) {
+                            replyMessage = "error";
+                        }
+                        safeReply(replyToken, replyMessage);
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                        break;
                     }
-                    this.replyText(replyToken, replyMessage);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                    break;
-                }
-                case "91m to diamond hill": {
-                    String replyMessage;
-                    try {
-                        BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
-                        String results = "";
-                        results = results + "Time: ";
-                        results = results + busETARequestHandler.getReplyMessage();
-                        replyMessage = results;
-                    } catch (Exception e) {
-                        replyMessage = "error";
+                    case "91m to diamond hill": {
+                        String replyMessage;
+                        try {
+                            BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
+                            String results = "";
+                            results = results + "Time: ";
+                            results = results + busETARequestHandler.getReplyMessage();
+                            replyMessage = results;
+                        } catch (Exception e) {
+                            replyMessage = "Cannot find given facility.";
+                        }
+                        safeReply(replyToken, replyMessage);
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                        break;
                     }
-                    this.replyText(replyToken, replyMessage);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                    break;
-                }
-                case "91 to clear water bay": {
-                    String replyMessage;
-                    try {
-                        BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
-                        String results = "";
-                        results = results + "Time: ";
-                        results = results + busETARequestHandler.getReplyMessage();
-                        replyMessage = results;
-                    } catch (Exception e) {
-                        replyMessage = "error";
+                    case "91 to clear water bay": {
+                        String replyMessage;
+                        try {
+                            BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
+                            String results = "";
+                            results = results + "Time: ";
+                            results = results + busETARequestHandler.getReplyMessage();
+                            replyMessage = results;
+                        } catch (Exception e) {
+                            replyMessage = "error";
+                        }
+                        safeReply(replyToken, replyMessage);
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                        break;
                     }
-                    this.replyText(replyToken, replyMessage);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                    break;
-                }
-                case "91m to po lam": {
-                    String replyMessage;
-                    try {
-                        BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
-                        String results = "";
-                        results = results + "Time: ";
-                        results = results + busETARequestHandler.getReplyMessage();
-                        replyMessage = results;
-                    } catch (Exception e) {
-                        replyMessage = "error";
-                    }
-                    this.replyText(replyToken, replyMessage);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                    break;
-                }
                 }
                 break;
             }
             case (ACTION.COURSE_INPUT): {
                 String reply = "Please enter the course code for the course you want to find.";
-                this.replyText(replyToken, reply);
+                safeReply(replyToken, reply);
                 db.storeAction(userId, text, ACTION.COURSE_SEARCH);
                 break;
             }
@@ -447,12 +394,12 @@ public class CallbackController {
                         } else {
                             reply += "And no similar course is found.";
                         }
-                        this.replyText(replyToken, reply);
+                        safeReply(replyToken, reply);
                         db.storeAction(userId, text, ACTION.EXIT_MAIN);
                     }
                 } else {
                     String reply = "ERROR:Invalid course code. Operation Aborted.";
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 }
                 break;
@@ -478,7 +425,7 @@ public class CallbackController {
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 } else {
                     String reply = "ERROR:Invalid course code. Operation Aborted.";
-                    this.replyText(replyToken, reply);
+                    safeReply(replyToken, reply);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 }
                 break;
@@ -497,8 +444,15 @@ public class CallbackController {
         return true;
     }
 
-    private void handleTextContent(String replyToken, Event event, TextMessageContent content) throws Exception {
+	private void safeReply(String replyToken, String reply) {
+		if (replyToken.equals("ffffWiB7yP5Zw52FIkcQobQuGDXCTA"))
+			return;
+		this.replyText(replyToken, reply);
+	}
 
+    private void handleTextContent(String replyToken, Event event, TextMessageContent content)
+            throws Exception {
+    	
         String text = content.getText();
 
         log.info("Got text message from {}: {}", replyToken, text);
@@ -516,75 +470,76 @@ public class CallbackController {
         // 2. If no matching previous action, determine action type based on input
         String reply = "";
         switch (text) {
-        case "a":
-            try {
-                db.storeAction(userId, text, ACTION.COURSE_INPUT);
-            } catch (Exception e) {
-                log.info(e.toString());
+            case "profile": {
+                //String userId = event.getSource().getUserId();
+                if (userId != null) {
+                    lineMessagingClient
+                            .getProfile(userId)
+                            .whenComplete((profile, throwable) -> {
+                                if (throwable != null) {
+                                    safeReply(replyToken, throwable.getMessage());
+                                    return;
+                                }
+
+                                this.reply(
+                                        replyToken,
+                                        Arrays.asList(new TextMessage(
+                                                                "Display name: " + profile.getDisplayName()),
+                                                        new TextMessage("Status message: "
+                                                                        + profile.getStatusMessage()))
+                                );
+
+                            });
+                } else {
+                    safeReply(replyToken, "Bot can't use profile API without user ID");
+                }
+                break;
             }
-            handleNextAction(userId, replyToken, text, db);
-            break;
+            case "a":
+                try { db.storeAction(userId, text, ACTION.COURSE_SEARCH); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
 
-        case "b": //provide facilities time
-            try {
-                db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
-            handleNextAction(userId, replyToken, text, db);
-            break;
+            case "b":		//provide facilities time
+                try { db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
 
-        // case "c":		// suggestedLinks
-        //     reply ="Which link do you want to find?\n"
-        //     +"1) Register for a locker\n"
-        //     +"2) Register for courses\n"
-        //     +"3) Check grades\n"
-        //     +"4) Find school calendar\n"
-        //     +"5) Book library rooms\n"
-        //     +"6) Find lecture materials\n";
-
-        //     this.replyText(
-        //         replyToken,
-        //         reply
-        //         );
-        //         // get input and search for links
-        //     break;
-
-        case "d": //find people
-            try {
-                db.storeAction(userId, text, ACTION.PEOPLE_INPUT);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
-            handleNextAction(userId, replyToken, text, db);
-            break;
+            case "c":		// suggestedLinks
+                try { db.storeAction(userId, text, ACTION.LINK_CHOOSE); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
+            
+            case "d":		//find people
+                try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
 
         case "e":
-            try {
-                db.storeAction(userId, text, ACTION.ROOM_INPUT);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
+            try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
 
         case "f":
-            try {
-                db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS);
-            } catch (Exception e) {
-                log.info(e.toString());
-            }
+            try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
 
         default:
-            String default_reply = "Which information do you want to know?\n" + "a) Course information\n"
-                    + "b) Restaurant/Facilities opening hours\n" + "c) Links suggestions\n" + "d) Find people\n"
-                    + "e) Lift advisor\n" + "f) Bus arrival/Departure time\n" + "g) Deadline list\n"
-                    + "h) Set notifications\n";
+            String default_reply ="Which information do you want to know?\n"
+                +"a) Course information (WIP)\n"
+                +"b) Restaurant/Facilities opening hours\n"
+                +"c) Links suggestions (WIP)\n"
+                +"d) Find people\n"
+                +"e) Lift advisor\n"
+                +"f) Bus arrival/Departure time\n"
+                +"g) Deadline list (WIP)\n"
+                +"h) Set notifications (WIP)\n";
             log.info("Returns  message {}: {}", replyToken, default_reply);
-            this.replyText(replyToken, default_reply);
-
+            safeReply(
+                    replyToken,
+                    default_reply
+            );
             break;
         }
     }
@@ -633,11 +588,11 @@ public class CallbackController {
         String uri;
     }
 
-    public CallbackController() {
-        database = new SQLDatabaseEngine();
+	public CallbackController() {
+		database = new SQLDatabaseEngine();
 
-    }
+	}
 
-    private SQLDatabaseEngine database;
+	private SQLDatabaseEngine database;
 
 }
