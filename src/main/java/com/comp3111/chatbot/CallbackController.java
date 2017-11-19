@@ -471,6 +471,10 @@ public class CallbackController {
                     String result = course_info.courseSearch();
                     this.replyText(replyToken, result);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                } else {
+                    String reply = "ERROR:Invalid course code. Operation Aborted.";
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 }
                 break;
             }
