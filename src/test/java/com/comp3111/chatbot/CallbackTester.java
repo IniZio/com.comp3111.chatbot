@@ -74,6 +74,15 @@ public class CallbackTester {
     @InjectMocks
     private CallbackController underTest;
     
+    
+    
+    @Test
+    public void testFollow() throws Exception {
+    		FollowEvent follow = new FollowEvent(token, new UserSource(userId),Instant.now());
+    		underTest.handleFollowEvent(follow);
+    }
+    
+    
     @Test
     public void testMenu() throws Exception {
         
@@ -351,6 +360,27 @@ public class CallbackTester {
                 Instant.now()		
         );
         
+        underTest.handleTextMessageEvent(request);
+    }
+    
+    @Test
+    public void testExit() throws Exception {
+        
+        MessageEvent request = new MessageEvent<TextMessageContent>(
+                token,			// reply token
+                new UserSource(userId),		// userId
+                new TextMessageContent(messageId, "f"),		//messageId , message
+                Instant.now()		//timestamp
+        );
+
+        underTest.handleTextMessageEvent(request);
+        
+        request = new MessageEvent<TextMessageContent>(
+                token,			// reply token
+                new UserSource(userId),		// userId
+                new TextMessageContent(messageId, "exit"),		//messageId , message
+                Instant.now()		//timestamp
+        );
         underTest.handleTextMessageEvent(request);
     }
 }
