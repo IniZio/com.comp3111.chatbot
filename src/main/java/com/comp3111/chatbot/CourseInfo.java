@@ -11,7 +11,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 public class CourseInfo {
-	private static String ERROR_NOT_FOUND_COURSE = "Sorry, the course is not found or not offered in the current semester. Do you mean....";
+	private static String ERROR_NOT_FOUND_COURSE = "";
 	private static String ERROR_NOT_FOUND_OPTION = "ERROR: no such option";
 	private static int MAX_CHAR = 300;
 
@@ -29,16 +29,6 @@ public class CourseInfo {
 	public CourseInfo(String text, OPTIONS options){
 		this.input = text;
 		this.options = options;
-	}
-
-	public static boolean coursePreChecker(String text){
-		//TODO
-		return true;
-	}
-	public static String[] similarCourseRecommendation(String text){
-		String[] result_course_list = {};
-		//TODO
-		return result_course_list;
 	}
 
 	public String courseSearch() throws JSONException, MalformedURLException, IOException {
