@@ -13,8 +13,19 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 
-
+/**
+ * The BusETARequestHandler Class is used to call API obtained from reverse engineering of KMB Android app and formulates result as a string for reply.
+ *
+ * @author ApplewoodL
+ */
 public class BusETARequestHandler {
+
+    /**
+     * Constructor which takes in route number and direction for API.
+     *
+     * @param route The bus route number
+     * @param bound The direction in terms of the standard given from KMB API
+     */
     public BusETARequestHandler (String route, String bound){
         this.route = route;
         this.bound = bound;
@@ -31,16 +42,14 @@ public class BusETARequestHandler {
     private String bound;
     private  String stop;
 
+    /**
+     * Uses external API from KMB app to collect JSON string and decode the JSON to get the list of arrival times of bus.
+     *
+     * @return A list of String of at most 3 arrival times or error if API return nothing
+     * @throws Exception
+     */
     public List<String> getArriveTime() throws Exception {
         URL url = new URL("http://etav3.kmb.hk/?action=geteta&lang=en&route=" + route + "&bound=" + bound + "&stop_seq=" + stop);
-//        BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-//        StringBuilder sb = new StringBuilder();
-//        String line;
-//        while ((line = br.readLine()) != null) {
-//            sb.append(line);
-//        }
-
-//        JSONObject arrival = new JSONObject(sb.toString());
         String jsonString = IOUtils.toString(url, Charset.defaultCharset());
         JSONObject arrival = new JSONObject(jsonString);
         JSONArray nextBus = arrival.getJSONArray("response");
@@ -62,6 +71,12 @@ public class BusETARequestHandler {
         return arrivalTimes;
     }
 
+    /**
+     * Formulate list from getArriveTime() to output String for reply.
+     *
+     * @return A String of formulated results from original source
+     * @throws Exception
+     */
     public String getReplyMessage() throws Exception{
         String replyMessage = "no info";
         StringBuilder results = new StringBuilder();

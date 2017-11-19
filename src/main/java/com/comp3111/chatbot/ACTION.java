@@ -13,4 +13,7 @@ public interface ACTION {
     String BUS_SEARCH = "bus_search";
     String LINK_CHOOSE = "link_choose";
     String LINK_SEARCH = "link_search";
+    String COURSE_INPUT = "course_input";
+    String COURSE_SEARCH = "course_search";
+    String COURSE_PICK = "course_pick";
 }
