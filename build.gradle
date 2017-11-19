@@ -13,6 +13,7 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
+apply plugin: "jacoco"
 
 version = '0.0.2'
 sourceCompatibility = 1.8
@@ -23,7 +24,7 @@ repositories {
 
 
 dependencies {
-	// compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.springframework.boot:spring-boot-starter-web')
 	compileOnly('org.projectlombok:lombok:1.16.18')
 	testCompileOnly('org.projectlombok:lombok:1.16.18')
 
@@ -37,7 +38,7 @@ dependencies {
 	compile('org.jsoup:jsoup:1.10.3')
 	compile('me.ghui:Fruit:1.0.4')
 	runtime('org.springframework.boot:spring-boot-devtools')
-	// testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
 	
 	
     compile group: 'postgresql', name: 'postgresql', version: '9.0-801.jdbc4'
@@ -45,5 +46,13 @@ dependencies {
 
 test {
     environment "DATABASE_URL", "postgres://hzexdguaujeemg:0b19b608607d151b840633d94b3a0f8690335aae595344c60bcf6ae0aa439896@ec2-54-221-244-196.compute-1.amazonaws.com:5432/dfsl0jltudjukf" 
+}
+
+jacocoTestReport{
+	reports{
+		xml.enabled false
+		csv.enabled false
+		html.destination file("${buildDir}/jacocoHtml")
+	}
 }
 
