@@ -417,7 +417,7 @@ public class CallbackController {
                 break;
             }
             case (ACTION.COURSE_SEARCH): {
-                if (origin.matches("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?")) {
+                if (origin.matches("([A-Z]|[a-z]){4}(\\s)?\\d{4}([A-Z]|[a-z])?")) {
                     text = origin.toLowerCase();
                     Course course = new Course(Course.extractCourseFromText(origin));
                     if (course.coursePreChecker()) {
@@ -457,7 +457,7 @@ public class CallbackController {
                 break;
             }
             case (ACTION.COURSE_PICK): {
-                if (origin.matches(".*([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?.*")) {
+                if (origin.matches(".*([A-Z]|[a-z]){4}(\\s)?\\d{4}([A-Z]|[a-z])?.*")) {
                     text = origin.toLowerCase();
                     String co_name = Course.extractCourseFromText(origin);
                     CourseInfo course_info = new CourseInfo();
@@ -513,7 +513,7 @@ public class CallbackController {
         switch (text) {
         case "a":
             try {
-                db.storeAction(userId, text, ACTION.COURSE_SEARCH);
+                db.storeAction(userId, text, ACTION.COURSE_INPUT);
             } catch (Exception e) {
                 log.info(e.toString());
             }
