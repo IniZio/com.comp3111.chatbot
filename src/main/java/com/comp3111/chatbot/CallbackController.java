@@ -376,7 +376,7 @@ public class CallbackController {
     }
 
 	private void safeReply(String replyToken, String reply) {
-		if (replyToken.equals("xxxx"))
+		if (replyToken.equals("ffffWiB7yP5Zw52FIkcQobQuGDXCTA"))
 			return;
 		this.replyText(replyToken, reply);
 	}
