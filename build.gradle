@@ -46,4 +46,3 @@ dependencies {
 test {
     environment "DATABASE_URL", "postgres://hzexdguaujeemg:0b19b608607d151b840633d94b3a0f8690335aae595344c60bcf6ae0aa439896@ec2-54-221-244-196.compute-1.amazonaws.com:5432/dfsl0jltudjukf" 
 }
-
