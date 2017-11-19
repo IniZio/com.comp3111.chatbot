@@ -116,6 +116,8 @@ public class CallbackController {
     }
 
     private void reply(@NonNull String replyToken, @NonNull Message message) {
+    		if (replyToken.equals("ffffWiB7yP5Zw52FIkcQobQuGDXCTA"))
+    			return;
         reply(replyToken, Collections.singletonList(message));
     }
 
