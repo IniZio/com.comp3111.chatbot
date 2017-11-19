@@ -268,11 +268,6 @@ public class CallbackController {
                 String reply;
                 try {
                     LiftAdvisor liftAdvisor = new LiftAdvisor(text);
-                    if (liftAdvisor.noRoomNumberDetected()) {
-                        reply = "No room number detected. Please enter number along with keyword room or rm";
-                        this.replyText(replyToken, reply);
-                        break;
-                    }
                     reply = liftAdvisor.getReplyMessage();
                 } catch (Exception e) {
                     reply = "error";
