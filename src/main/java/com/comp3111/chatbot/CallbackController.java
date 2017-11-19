@@ -25,6 +25,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.google.common.io.ByteStreams;
 
 import com.linecorp.bot.client.LineMessagingClient;
+import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.client.MessageContentResponse;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.event.BeaconEvent;
@@ -56,7 +57,7 @@ import com.linecorp.bot.model.message.imagemap.ImagemapArea;
 import com.linecorp.bot.model.message.imagemap.ImagemapBaseSize;
 import com.linecorp.bot.model.message.imagemap.MessageImagemapAction;
 import com.linecorp.bot.model.message.imagemap.URIImagemapAction;
-import com.linecorp.bot.model.response.BotApiResponse;
+import com.linecorp.bot.model.response.*;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
@@ -468,8 +469,12 @@ public class CallbackController {
                     } else if (text.contains("schedule") || text.contains("time")) {
                         course_info = new CourseInfo(co_name, OPTIONS.SCHEDULE);
                     }
-                    String result = course_info.courseSearch();
-                    this.replyText(replyToken, result);
+                    List<String> result = course_info.courseSearch();
+                    List<Message> textMessages = new ArrayList<>();
+                    for (String result_item : result) {
+                        textMessages.add(new TextMessage(result_item));
+                    }
+                    this.reply(replyToken, textMessages);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
                 } else {
                     String reply = "ERROR:Invalid course code. Operation Aborted.";
