@@ -159,10 +159,7 @@ public class SQLDatabaseEngine {
 		
 		try {		
 			connection = this.getConnection();
-
-			stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+action +"' ) ON CONFLICT (userid) DO UPDATE SET userinput='" + text + "', action='" + action + "';" );			
-
-			// stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+action +"' ) WHERE ;" );
+			stmt = connection.prepareStatement("INSERT INTO mainflow VALUES('"+ id + "'," + "'"+text +"', "+ "'"+action +"' ) ON CONFLICT (userid) DO UPDATE SET userinput='" + text + "', action='" + action + "';" );
 			rs = stmt.executeQuery();
 			connection.close();
 		} catch (Exception e) {
