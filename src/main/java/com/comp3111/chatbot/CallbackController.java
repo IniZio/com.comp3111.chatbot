@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import com.linecorp.bot.model.action.*;
 import com.linecorp.bot.model.message.template.*;
@@ -63,6 +65,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import com.comp3111.chatbot.BusETARequestHandler;
+import com.comp3111.chatbot.CourseInfo.OPTIONS;
 
 @Slf4j
 @LineMessageHandler
@@ -80,7 +83,6 @@ public class CallbackController {
         handleTextContent(event.getReplyToken(), event, message);
     }
 
-
     @EventMapping
     public void handleUnfollowEvent(UnfollowEvent event) {
         log.info("unfollowed this bot: {}", event);
@@ -89,25 +91,26 @@ public class CallbackController {
     @EventMapping
     public void handleFollowEvent(FollowEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Got followed event");
+        safeReply(replyToken, "Got followed event");
     }
 
     @EventMapping
     public void handleJoinEvent(JoinEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Joined " + event.getSource());
+        safeReply(replyToken, "Joined " + event.getSource());
     }
 
     @EventMapping
     public void handlePostbackEvent(PostbackEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param " + event.getPostbackContent().getParams().toString());
+        safeReply(replyToken, "Got postback data " + event.getPostbackContent().getData() + ", param "
+                + event.getPostbackContent().getParams().toString());
     }
 
     @EventMapping
     public void handleBeaconEvent(BeaconEvent event) {
         String replyToken = event.getReplyToken();
-        this.replyText(replyToken, "Got beacon message " + event.getBeacon().getHwid());
+        safeReply(replyToken, "Got beacon message " + event.getBeacon().getHwid());
     }
 
     @EventMapping
@@ -123,9 +126,7 @@ public class CallbackController {
 
     private void reply(@NonNull String replyToken, @NonNull List<Message> messages) {
         try {
-            BotApiResponse apiResponse = lineMessagingClient
-                    .replyMessage(new ReplyMessage(replyToken, messages))
-                    .get();
+            BotApiResponse apiResponse = lineMessagingClient.replyMessage(new ReplyMessage(replyToken, messages)).get();
             log.info("Sent messages: {}", apiResponse);
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException(e);
@@ -142,15 +143,16 @@ public class CallbackController {
         this.reply(replyToken, new TextMessage(message));
     }
 
-
-
     private Boolean handleNextAction(String userId, String replyToken, String text, SQLDatabaseEngine db)
-        throws Exception
-    {
+            throws Exception {
         // SQLDatabaseEngine db = new SQLDatabaseEngine();        
         String[] curr = db.nextAction(userId);
         String action = curr[1];
         String param = curr[0];
+
+        String origin = text;
+        text = text.toLowerCase();
+
         log.info("Going to handle action {}, and it is {} null", action, action == null ? "" : "not");
         if (action == null || action.equals(ACTION.EXIT_MAIN)) {
             return false;
@@ -164,212 +166,272 @@ public class CallbackController {
 
         try {
             switch (action) {
-                case ACTION.PEOPLE_INPUT: {
-                    String reply ="Who do you want to find? Please enter his/her full name or ITSC.";
-                    safeReply(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.PEOPLE_SEARCH);
+            case ACTION.PEOPLE_INPUT: {
+                String reply = "Who do you want to find? Please enter his/her full name or ITSC.";
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.PEOPLE_SEARCH);
+                break;
+            }
+            case ACTION.PEOPLE_SEARCH: {
+                String replyPeople;
+
+                URLConnectionReader search = new URLConnectionReader();
+                PeopleList result = search.SearchPeople(text);
+                ArrayList<people> resultList = result.getList();
+
+                StringBuilder results = new StringBuilder();
+                results.append("Search Result(s):");
+
+                if (resultList == null) {
+                    results.append("\nNot found.");
+                    safeReply(replyToken, results.toString());
                     break;
-                }
-                case ACTION.PEOPLE_SEARCH: {
-                    String replyPeople;
-                    
-                    URLConnectionReader search = new URLConnectionReader();
-                    PeopleList result=search.SearchPeople(text);
-                    ArrayList<people> resultList = result.getList();
-                        
-                    StringBuilder results = new StringBuilder();
-                    results.append("Search Result(s):");
-                        
-                    if (resultList ==null) {
-                        results.append("\nNot found.");
-                        this.replyText(replyToken, results.toString());
-                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                        break;
+                } else {
+                    for (people p : resultList) {
+                        results.append(String.format(
+                                "\n\nTitle: %s\nName: %s\nEmail: %s\nPhone: %s\nDepartment: %s\nRoom: %s", p.getTitle(),
+                                p.getName(), p.getEmail(), p.getPhone(), p.getDepartment(), p.getRoom()));
                     }
-                    else{
-                        for (people p : resultList){
-                            results.append(
-                                String.format("\n\nTitle: %s\nName: %s\nEmail: %s\nPhone: %s\nDepartment: %s\nRoom: %s",
-                                    p.getTitle(),
-                                    p.getName(),
-                                    p.getEmail(),
-                                    p.getPhone(),
-                                    p.getDepartment(),
-                                    p.getRoom()
-                                )
-                            );
-                        }
-                    }
-                    
-                    if (PeopleList.too_many==true) {
-                        results.append("\nToo many results...");
-                    }
-                    replyPeople = results.toString();
-                    safeReply(replyToken, replyPeople);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                }
+
+                if (PeopleList.too_many == true) {
+                    results.append("\nToo many results...");
+                }
+                replyPeople = results.toString();
+                safeReply(replyToken, replyPeople);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                break;
+            }
+            case ACTION.ROOM_INPUT: {
+                String reply = "What room do you want to find? Please enter the room number.";
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.ROOM_SEARCH);
+                break;
+            }
+            case ACTION.ROOM_SEARCH: {
+                String reply;
+                try {
+                    LiftAdvisor liftAdvisor = new LiftAdvisor(text);
+                    reply = liftAdvisor.getReplyMessage();
+                } catch (Exception e) {
+                    reply = "error";
+                }
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                break;
+            }
+            case ACTION.OPENINGHOUR_CHOOSE: {
+                String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
+                try {
+                    reply += db.showChoice(ACTION.OPENINGHOUR_CHOOSE);
+                } catch (Exception e) {
+                    reply = "Exception occur";
+                }
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.OPENINGHOUR_SEARCH);
+                break;
+            }
+            case ACTION.OPENINGHOUR_SEARCH: {
+                String reply;
+                try {
+                    reply = db.openingHourSearch(text);
+                } catch (Exception e) {
+                    reply = "Cannot find given facility";
+                }
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                break;
+            }
+            case ACTION.BUS_CHOOSE_BUS: {
+                String reply = "Choose which bus you would like to take.";
+                ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?", new MessageAction("91", "91"),
+                        new MessageAction("91M", "91M"));
+                TemplateMessage busTemplateMessage = new TemplateMessage("Please type in 91 or 91M",
+                        busConfirmTemplate);
+                this.reply(replyToken, busTemplateMessage);
+                db.storeAction(userId, text, ACTION.BUS_CHOOSE_DEST);
+                break;
+            }
+            case ACTION.BUS_CHOOSE_DEST: {
+                switch (text) {
+                case "91": {
+                    ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
+                            new MessageAction("Diamond Hill", "Diamond Hill"),
+                            new MessageAction("Clear Water Bay", "Clear Water Bay"));
+                    TemplateMessage route91TemplateMessage = new TemplateMessage(
+                            "Please Type in Diamond Hill or Clear Water Bay", route91ConfirmTemplate);
+                    this.reply(replyToken, route91TemplateMessage);
+                    db.storeAction(userId, text, ACTION.BUS_SEARCH);
                     break;
                 }
-                case ACTION.ROOM_INPUT: {
-                    String reply ="What room do you want to find? Please enter the room number.";                    
-                    safeReply(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.ROOM_SEARCH);
-                    break;
-                }
-                case ACTION.ROOM_SEARCH: {
-                    String reply;
-                    try {
-                        LiftAdvisor liftAdvisor = new LiftAdvisor(text);
-                        if (liftAdvisor.noRoomNumberDetected()){
-                            reply = "No room number detected. Please enter number along with keyword room or rm";
-                            safeReply(replyToken, reply);
-                            break;
-                        }
-                        reply = liftAdvisor.getReplyMessage();
-                    }catch (Exception e){
-                        reply = "error";
-                    }
-                    safeReply(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);                   
-                    break;
-                }
-                case ACTION.OPENINGHOUR_CHOOSE: {
-                    String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
-                    try {
-                        reply += db.showFacilitiesChoices();
-                    } catch (Exception e) {
-                        reply = "Exception occur";
-                    }
-                    log.info("Returns echo message {}: {}", replyToken, reply);
-                    safeReply(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.OPENINGHOUR_SEARCH);                                       
-                    break;
-                }
-                case ACTION.OPENINGHOUR_SEARCH: {
-                    String reply;
-                    try {
-                        reply = db.openingHourSearch(text);
-                    } catch (Exception e) {
-                        reply = "Cannot find given facility";
-                    }
-                    safeReply(replyToken, reply);
-                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                    break;
-                }
-                case ACTION.BUS_CHOOSE_BUS: {
-                    String reply ="Choose which bus you would like to take.";
-                    ConfirmTemplate busConfirmTemplate = new ConfirmTemplate("Which route?",
-                        new MessageAction("91", "91"),
-                        new MessageAction("91M", "91M")
-                    );
-                    TemplateMessage busTemplateMessage = new TemplateMessage("Please type in 91 or 91M", busConfirmTemplate);
-                    this.reply(replyToken, busTemplateMessage);
-                    db.storeAction(userId, text, ACTION.BUS_CHOOSE_DEST);
-                    break;
-                }
-                case ACTION.BUS_CHOOSE_DEST: {
-                    switch (text) {
-                        case "91":{
-                            ConfirmTemplate route91ConfirmTemplate = new ConfirmTemplate("91 to which direction?",
-                                    new MessageAction("Diamond Hill", "Diamond Hill"),
-                                    new MessageAction("Clear Water Bay", "Clear Water Bay")
-                            );
-                            TemplateMessage route91TemplateMessage = new TemplateMessage("Please Type in Diamond Hill or Clear Water Bay", route91ConfirmTemplate);
-                            this.reply(replyToken, route91TemplateMessage);
-                            db.storeAction(userId, text, ACTION.BUS_SEARCH);
-                            break;
-                        }
-                        case "91m":{
-                            ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
-                                    new MessageAction("Diamond Hill", "Diamond Hill"),
-                                    new MessageAction("Po Lam", "Po Lam")
-                            );
-                            TemplateMessage route91MTemplateMessage = new TemplateMessage("Please Type in Diamond Hill or Po Lam", route91MConfirmTemplate);
-                            this.reply(replyToken, route91MTemplateMessage);
-                            db.storeAction(userId, text, ACTION.BUS_SEARCH);
-                            break;
-                        }
-                        default: {
-                            String reply = "Invalid bus number.";
-                            safeReply(replyToken, reply);
-                            db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS);
-                            handleNextAction(userId, replyToken, text, db);
-                            return true;
-                        }
-                    }
-                    break;
-                }
-                case ACTION.BUS_SEARCH: {
-                    switch (param + " to " + text) {
-                        case "91 to diamond hill":{
-                            String replyMessage;
-                            try {
-                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
-                                String results = "";
-                                results = results + "Time: ";
-                                results = results + busETARequestHandler.getReplyMessage();
-                                replyMessage = results;
-                            } catch (Exception e){
-                                replyMessage = "error";
-                            }
-                            safeReply(replyToken, replyMessage);
-                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                            break;
-                        }
-                        case "91m to diamond hill":{
-                            String replyMessage;
-                            try {
-                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
-                                String results = "";
-                                results = results + "Time: ";
-                                results = results + busETARequestHandler.getReplyMessage();
-                                replyMessage = results;
-                            } catch (Exception e){
-                                replyMessage = "error";
-                            }
-                            safeReply(replyToken, replyMessage);
-                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                            break;
-                        }
-                        case "91 to clear water bay":{
-                            String replyMessage;
-                            try {
-                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
-                                String results = "";
-                                results = results + "Time: ";
-                                results = results + busETARequestHandler.getReplyMessage();
-                                replyMessage = results;
-                            } catch (Exception e){
-                                replyMessage = "error";
-                            }
-                            safeReply(replyToken, replyMessage);
-                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                            break;
-                        }
-                        case "91m to po lam":{
-                            String replyMessage;
-                            try {
-                                BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "2");
-                                String results = "";
-                                results = results + "Time: ";
-                                results = results + busETARequestHandler.getReplyMessage();
-                                replyMessage = results;
-                            } catch (Exception e){
-                                replyMessage = "error";
-                            }
-                            safeReply(replyToken, replyMessage);
-                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
-                            break;
-                        }
-                    }
-                    break;
-                }
-                case ACTION.EXIT_MAIN: {
-                    // TODO: print main menu
+                case "91m": {
+                    ConfirmTemplate route91MConfirmTemplate = new ConfirmTemplate("91M to which direction?",
+                            new MessageAction("Diamond Hill", "Diamond Hill"), new MessageAction("Po Lam", "Po Lam"));
+                    TemplateMessage route91MTemplateMessage = new TemplateMessage(
+                            "Please Type in Diamond Hill or Po Lam", route91MConfirmTemplate);
+                    this.reply(replyToken, route91MTemplateMessage);
+                    db.storeAction(userId, text, ACTION.BUS_SEARCH);
                     break;
                 }
                 default: {
-                    return false;
+                    String reply = "Invalid bus number.";
+                    safeReply(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS);
+                    handleNextAction(userId, replyToken, text, db);
+                    return true;
                 }
+                }
+                break;
+            }
+            case ACTION.LINK_CHOOSE: {
+                String reply = "Which link do you want to find? Please enter a number in front of the choice.\n";
+                try {
+                    reply += db.showChoice(ACTION.LINK_CHOOSE);
+                } catch (Exception e) {
+                    reply = "Exception occur";
+                }
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.LINK_SEARCH);                                       
+                break;
+            }
+            case ACTION.LINK_SEARCH: {
+                String reply;
+                try {
+                    reply = db.linkSearch(text);
+                } catch (Exception e) {
+                    reply = "Cannot find given link.";
+                }
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                break;
+            }
+            case ACTION.BUS_SEARCH: {
+                switch (param + " to " + text) {
+                    case "91 to diamond hill": {
+                        String replyMessage;
+                        try {
+                            BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "1");
+                            String results = "";
+                            results = results + "Time: ";
+                            results = results + busETARequestHandler.getReplyMessage();
+                            replyMessage = results;
+                        } catch (Exception e) {
+                            replyMessage = "error";
+                        }
+                        safeReply(replyToken, replyMessage);
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                        break;
+                    }
+                    case "91m to diamond hill": {
+                        String replyMessage;
+                        try {
+                            BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91M", "1");
+                            String results = "";
+                            results = results + "Time: ";
+                            results = results + busETARequestHandler.getReplyMessage();
+                            replyMessage = results;
+                        } catch (Exception e) {
+                            replyMessage = "Cannot find given facility.";
+                        }
+                        safeReply(replyToken, replyMessage);
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                        break;
+                    }
+                    case "91 to clear water bay": {
+                        String replyMessage;
+                        try {
+                            BusETARequestHandler busETARequestHandler = new BusETARequestHandler("91", "2");
+                            String results = "";
+                            results = results + "Time: ";
+                            results = results + busETARequestHandler.getReplyMessage();
+                            replyMessage = results;
+                        } catch (Exception e) {
+                            replyMessage = "error";
+                        }
+                        safeReply(replyToken, replyMessage);
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                        break;
+                    }
+                }
+                break;
+            }
+            case (ACTION.COURSE_INPUT): {
+                String reply = "Please enter the course code for the course you want to find.";
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.COURSE_SEARCH);
+                break;
+            }
+            case (ACTION.COURSE_SEARCH): {
+                if (origin.matches("([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?")) {
+                    text = origin.toLowerCase();
+                    Course course = new Course(Course.extractCourseFromText(origin));
+                    if (course.coursePreChecker()) {
+                        String co_name = course.getName();
+                        ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Course " + co_name,
+                                "What do you want to do?",
+                                Arrays.asList(new MessageAction("Overview", "Course Overview for " + co_name),
+                                        new MessageAction("Quota", "Quota of " + co_name),
+                                        new MessageAction("Schedules", "Schedules for " + co_name)));
+                        TemplateMessage templateMessage = new TemplateMessage("--------- Course " + co_name
+                                + "---------\n What do you Want to know about?\n\n Use " + co_name
+                                + " with following keywords to find out:\nOverview)Course Overview for " + co_name
+                                + "\nQuota) Quota of " + co_name + "\nSchedules)Schedules for " + co_name
+                                + "\n\nNOTE:\nInteractive interface is disabled in desktop client. If you want to use interactive interface, please take following actions:",
+                                buttonsTemplate);
+                        this.reply(replyToken, templateMessage);
+                        db.storeAction(userId, text, ACTION.COURSE_PICK);
+                    } else {
+                        String reply = "Sorry, the course is not found or not offered in the current semester. ";
+                        List<String> crl = course.similarCourseRecommendation();
+                        if (crl.size() > 0) {
+                            reply += "Do you mean....";
+                            for (String cr : crl) {
+                                reply += "\n- " + cr;
+                            }
+                        } else {
+                            reply += "And no similar course is found.";
+                        }
+                        safeReply(replyToken, reply);
+                        db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                    }
+                } else {
+                    String reply = "ERROR:Invalid course code. Operation Aborted.";
+                    safeReply(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                }
+                break;
+            }
+            case (ACTION.COURSE_PICK): {
+                if (origin.matches(".*([A-Z]|[a-z]){4}\\d{4}([A-Z]|[a-z])?.*")) {
+                    text = origin.toLowerCase();
+                    String co_name = Course.extractCourseFromText(origin);
+                    CourseInfo course_info = new CourseInfo();
+                    if (text.contains("overview")) {
+                        course_info = new CourseInfo(co_name, OPTIONS.OVERVIEW);
+                    } else if (text.contains("quota") || text.contains("seat") || text.contains("place")) {
+                        course_info = new CourseInfo(co_name, OPTIONS.QUOTA);
+                    } else if (text.contains("schedule") || text.contains("time")) {
+                        course_info = new CourseInfo(co_name, OPTIONS.SCHEDULE);
+                    }
+                    String result = course_info.courseSearch();
+                    safeReply(replyToken, result);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                } else {
+                    String reply = "ERROR:Invalid course code. Operation Aborted.";
+                    safeReply(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                }
+                break;
+            }
+            case ACTION.EXIT_MAIN: {
+                // TODO: print main menu
+                break;
+            }
+            default: {
+                return false;
+            }
             }
         } catch (Exception e) {
             log.info(e.toString());
@@ -387,78 +449,97 @@ public class CallbackController {
             throws Exception {
     	
         String text = content.getText();
-        text=text.toLowerCase();        
-        
+
         log.info("Got text message from {}: {}", replyToken, text);
+        //
 
         // 1. Check for stored next action...
-        String userId = event.getSource().getUserId();			
+        String userId = event.getSource().getUserId();
         SQLDatabaseEngine db = new SQLDatabaseEngine();
 
         // ... then leave if the action is done
         if (handleNextAction(userId, replyToken, text, db))
             return;
 
+        text = text.toLowerCase();
         // 2. If no matching previous action, determine action type based on input
         String reply = "";
         switch (text) {
-            
+            case "profile": {
+                //String userId = event.getSource().getUserId();
+                if (userId != null) {
+                    lineMessagingClient
+                            .getProfile(userId)
+                            .whenComplete((profile, throwable) -> {
+                                if (throwable != null) {
+                                    safeReply(replyToken, throwable.getMessage());
+                                    return;
+                                }
+
+                                this.reply(
+                                        replyToken,
+                                        Arrays.asList(new TextMessage(
+                                                              "Display name: " + profile.getDisplayName()),
+                                                      new TextMessage("Status message: "
+                                                                      + profile.getStatusMessage()))
+                                );
+
+                            });
+                } else {
+                    safeReply(replyToken, "Bot can't use profile API without user ID");
+                }
+                break;
+            }
+            case "a":
+                try { db.storeAction(userId, text, ACTION.COURSE_SEARCH); } catch (Exception e) {log.info(e.toString());}
+                break;
+
             case "b":		//provide facilities time
                 try { db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
                 break;
 
-            // case "c":		// suggestedLinks
-            //     reply ="Which link do you want to find?\n"
-            //     +"1) Register for a locker\n"
-            //     +"2) Register for courses\n"
-            //     +"3) Check grades\n"
-            //     +"4) Find school calendar\n"
-            //     +"5) Book library rooms\n"
-            //     +"6) Find lecture materials\n";
-                
-            //     this.replyText(
-            //         replyToken,
-            //         reply
-            //         );
-            //         // get input and search for links
-            //     break;
+            case "c":		// suggestedLinks
+                try { db.storeAction(userId, text, ACTION.LINK_CHOOSE); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
             
             case "d":		//find people
                 try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);
                 break;
 
-            case "e":
-                try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
-                handleNextAction(userId, replyToken, text, db);
-                break;
-            
-            case "f":
-                try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
-                handleNextAction(userId, replyToken, text, db);
-                break;
+        case "e":
+            try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
+            handleNextAction(userId, replyToken, text, db);
+            break;
 
-            default:
-                String default_reply ="Which information do you want to know?\n"
-                    +"a) Course information (WIP)\n"
-                    +"b) Restaurant/Facilities opening hours\n"
-                    +"c) Links suggestions (WIP)\n"
-                    +"d) Find people\n"
-                    +"e) Lift advisor\n"
-                    +"f) Bus arrival/Departure time\n"
-                    +"g) Deadline list (WIP)\n"
-                    +"h) Set notifications (WIP)\n";
-                log.info("Returns  message {}: {}", replyToken, default_reply);
-			safeReply(replyToken, default_reply);
-                break;
+        case "f":
+            try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
+            handleNextAction(userId, replyToken, text, db);
+            break;
+
+        default:
+            String default_reply ="Which information do you want to know?\n"
+                +"a) Course information (WIP)\n"
+                +"b) Restaurant/Facilities opening hours\n"
+                +"c) Links suggestions (WIP)\n"
+                +"d) Find people\n"
+                +"e) Lift advisor\n"
+                +"f) Bus arrival/Departure time\n"
+                +"g) Deadline list (WIP)\n"
+                +"h) Set notifications (WIP)\n";
+            log.info("Returns  message {}: {}", replyToken, default_reply);
+            safeReply(
+                    replyToken,
+                    default_reply
+            );
+            break;
         }
     }
 
     private static String createUri(String path) {
-        return ServletUriComponentsBuilder.fromCurrentContextPath()
-                                          .path(path).build()
-                                          .toUriString();
+        return ServletUriComponentsBuilder.fromCurrentContextPath().path(path).build().toUriString();
     }
 
     private void system(String... args) {
@@ -492,9 +573,7 @@ public class CallbackController {
         String fileName = LocalDateTime.now().toString() + '-' + UUID.randomUUID().toString() + '.' + ext;
         Path tempFile = ChatbotApplication.downloadedContentDir.resolve(fileName);
         tempFile.toFile().deleteOnExit();
-        return new DownloadedContent(
-                tempFile,
-                createUri("/downloaded/" + tempFile.getFileName()));
+        return new DownloadedContent(tempFile, createUri("/downloaded/" + tempFile.getFileName()));
     }
 
     @Value
@@ -502,12 +581,12 @@ public class CallbackController {
         Path path;
         String uri;
     }
-    
+
 	public CallbackController() {
 		database = new SQLDatabaseEngine();
-		
+
 	}
 
 	private SQLDatabaseEngine database;
-	
+
 }
