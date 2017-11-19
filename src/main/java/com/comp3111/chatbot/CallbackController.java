@@ -279,7 +279,7 @@ public class CallbackController {
             case ACTION.OPENINGHOUR_CHOOSE: {
                 String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
                 try {
-                    reply += db.showFacilitiesChoices();
+                    reply += db.showChoice(ACTION.OPENINGHOUR_CHOOSE);
                 } catch (Exception e) {
                     reply = "Exception occur";
                 }
@@ -340,6 +340,29 @@ public class CallbackController {
                 }
                 break;
             }
+            case ACTION.LINK_CHOOSE: {
+                String reply = "Which link do you want to find? Please enter a number in front of the choice.\n";
+                try {
+                    reply += db.showChoice(ACTION.LINK_CHOOSE);
+                } catch (Exception e) {
+                    reply = "Exception occur";
+                }
+                log.info("Returns echo message {}: {}", replyToken, reply);
+                this.replyText(replyToken, reply);
+                db.storeAction(userId, text, ACTION.LINK_SEARCH);                                       
+                break;
+            }
+            case ACTION.LINK_SEARCH: {
+                String reply;
+                try {
+                    reply = db.linkSearch(text);
+                } catch (Exception e) {
+                    reply = "Cannot find given link.";
+                }
+                this.replyText(replyToken, reply);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                break;
+            }
             case ACTION.BUS_SEARCH: {
                 switch (param + " to " + text) {
                 case "91 to diamond hill": {
@@ -366,7 +389,7 @@ public class CallbackController {
                         results = results + busETARequestHandler.getReplyMessage();
                         replyMessage = results;
                     } catch (Exception e) {
-                        replyMessage = "error";
+                        replyMessage = "Cannot find given facility.";
                     }
                     this.replyText(replyToken, replyMessage);
                     db.storeAction(userId, text, ACTION.EXIT_MAIN);
@@ -506,34 +529,49 @@ public class CallbackController {
         // 2. If no matching previous action, determine action type based on input
         String reply = "";
         switch (text) {
-        case "a":
-            try { db.storeAction(userId, text, ACTION.COURSE_SEARCH); } catch (Exception e) {log.info(e.toString());}
-            break;
-        case "b":		//provide facilities time
-            try { db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE); } catch (Exception e) {log.info(e.toString());}
-            handleNextAction(userId, replyToken, text, db);
-            break;
+            case "profile": {
+                //String userId = event.getSource().getUserId();
+                if (userId != null) {
+                    lineMessagingClient
+                            .getProfile(userId)
+                            .whenComplete((profile, throwable) -> {
+                                if (throwable != null) {
+                                    this.replyText(replyToken, throwable.getMessage());
+                                    return;
+                                }
 
-        // case "c":		// suggestedLinks
-        //     reply ="Which link do you want to find?\n"
-        //     +"1) Register for a locker\n"
-        //     +"2) Register for courses\n"
-        //     +"3) Check grades\n"
-        //     +"4) Find school calendar\n"
-        //     +"5) Book library rooms\n"
-        //     +"6) Find lecture materials\n";
+                                this.reply(
+                                        replyToken,
+                                        Arrays.asList(new TextMessage(
+                                                              "Display name: " + profile.getDisplayName()),
+                                                      new TextMessage("Status message: "
+                                                                      + profile.getStatusMessage()))
+                                );
 
-        //     this.replyText(
-        //         replyToken,
-        //         reply
-        //         );
-        //         // get input and search for links
-        //     break;
+                            });
+                } else {
+                    this.replyText(replyToken, "Bot can't use profile API without user ID");
+                }
+                break;
+            }
+            case "a":
+                try { db.storeAction(userId, text, ACTION.COURSE_SEARCH); } catch (Exception e) {log.info(e.toString());}
+                break;
 
-        case "d":		//find people
-            try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
-            handleNextAction(userId, replyToken, text, db);
-            break;
+            case "b":		//provide facilities time
+                try { db.storeAction(userId, text, ACTION.OPENINGHOUR_CHOOSE); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
+
+            case "c":		// suggestedLinks
+                try { db.storeAction(userId, text, ACTION.LINK_CHOOSE); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
+            
+            case "d":		//find people
+                try { db.storeAction(userId, text, ACTION.PEOPLE_INPUT); } catch (Exception e) {log.info(e.toString());}
+                handleNextAction(userId, replyToken, text, db);
+                break;
 
         case "e":
             try { db.storeAction(userId, text, ACTION.ROOM_INPUT); } catch (Exception e) {log.info(e.toString());}
