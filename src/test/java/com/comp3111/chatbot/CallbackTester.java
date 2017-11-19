@@ -66,7 +66,10 @@ import com.comp3111.chatbot.*;;
 		BusETARequestHandler.class, LiftAdvisor.class, people.class, PeopleList.class, URLConnectionReader.class})
 public class CallbackTester {
 
-    @Mock
+    private String messageId = "325708";
+	private String userId = "ffffff45d24edc510b079fdff54e4d0b";
+	private String token = "ffffWiB7yP5Zw52FIkcQobQuGDXCTA";
+	@Mock
     private LineMessagingClient lineMessagingClient;
     @InjectMocks
     private CallbackController underTest;
@@ -75,9 +78,9 @@ public class CallbackTester {
     public void testMenu() throws Exception {
         
         final MessageEvent request = new MessageEvent<TextMessageContent>(
-                "ffffWiB7yP5Zw52FIkcQobQuGDXCTA",			// reply token
-                new UserSource("ffffff45d24edc510b079fdff54e4d0b"),		// userId
-                new TextMessageContent("325708", "helloooooo"),		//messageId , message
+                token,			// reply token
+                new UserSource(userId),		// userId
+                new TextMessageContent(messageId, "helloooooo"),		//messageId , message
                 Instant.now()		//timestamp
         );
 
@@ -89,18 +92,18 @@ public class CallbackTester {
     public void testLiftFound() throws Exception {
         
         MessageEvent request = new MessageEvent<TextMessageContent>(
-                "ffffWiB7yP5Zw52FIkcQobQuGDXCTA",			
-                new UserSource("ffffff45d24edc510b079fdff54e4d0b"),		
-                new TextMessageContent("325708", "e"),		
+                token,			
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "e"),		
                 Instant.now()		
         );
 
         underTest.handleTextMessageEvent(request);
         
         request=new MessageEvent<TextMessageContent>(
-                "ffffWiB7yP5Zw52FIkcQobQuGDXCTA",		
-                new UserSource("ffffff45d24edc510b079fdff54e4d0b"),		
-                new TextMessageContent("325708", "Rm2465"),		
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "Rm2465"),		
                 Instant.now()		
         );
         
@@ -110,18 +113,107 @@ public class CallbackTester {
     public void testLiftNotFound() throws Exception {
         
         MessageEvent request = new MessageEvent<TextMessageContent>(
-                "ffffWiB7yP5Zw52FIkcQobQuGDXCTA",			
-                new UserSource("ffffff45d24edc510b079fdff54e4d0b"),	
-                new TextMessageContent("325708", "e"),	
+                token,			
+                new UserSource(userId),	
+                new TextMessageContent(messageId, "e"),	
                 Instant.now()	
         );
 
         underTest.handleTextMessageEvent(request);
         
         request=new MessageEvent<TextMessageContent>(
-                "ffffWiB7yP5Zw52FIkcQobQuGDXCTA",		
-                new UserSource("ffffff45d24edc510b079fdff54e4d0b"),		
-                new TextMessageContent("325708", "2465"),		
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "lsk"),		
+                Instant.now()		
+        );
+        
+        underTest.handleTextMessageEvent(request);
+        
+        request=new MessageEvent<TextMessageContent>(
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "ROOM 4010"),		
+                Instant.now()		
+        );
+        
+        underTest.handleTextMessageEvent(request);
+    }
+    
+    @Test
+    public void testFacilities() throws Exception {
+        
+        MessageEvent request = new MessageEvent<TextMessageContent>(
+                token,			
+                new UserSource(userId),	
+                new TextMessageContent(messageId, "b"),	
+                Instant.now()	
+        );
+
+        underTest.handleTextMessageEvent(request);
+        
+        request=new MessageEvent<TextMessageContent>(
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "abc"),		
+                Instant.now()		
+        );
+        
+        underTest.handleTextMessageEvent(request);
+        
+        request=new MessageEvent<TextMessageContent>(
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "b"),		
+                Instant.now()		
+        );
+        
+        underTest.handleTextMessageEvent(request);
+        
+        request=new MessageEvent<TextMessageContent>(
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "2"),		
+                Instant.now()		
+        );
+        
+        underTest.handleTextMessageEvent(request);
+    }
+    
+    @Test
+    public void testPeople() throws Exception {
+        
+        MessageEvent request = new MessageEvent<TextMessageContent>(
+                token,			
+                new UserSource(userId),	
+                new TextMessageContent(messageId, "d"),	
+                Instant.now()	
+        );
+
+        underTest.handleTextMessageEvent(request);
+        
+        request=new MessageEvent<TextMessageContent>(
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "kevin"),		
+                Instant.now()		
+        );
+        
+        underTest.handleTextMessageEvent(request);
+        
+        request=new MessageEvent<TextMessageContent>(
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "d"),		
+                Instant.now()		
+        );
+        
+        underTest.handleTextMessageEvent(request);
+        
+        request=new MessageEvent<TextMessageContent>(
+                token,		
+                new UserSource(userId),		
+                new TextMessageContent(messageId, "sdfsdf"),		
                 Instant.now()		
         );
         
