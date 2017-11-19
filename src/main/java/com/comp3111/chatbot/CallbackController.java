@@ -279,7 +279,7 @@ public class CallbackController {
             case ACTION.OPENINGHOUR_CHOOSE: {
                 String reply = "Please enter the number in front of the facilities to query the opening hour:\n";
                 try {
-                    reply += db.showFacilitiesChoices();
+                    reply += db.showChoice(ACTION.OPENINGHOUR_CHOOSE);
                 } catch (Exception e) {
                     reply = "Exception occur";
                 }
