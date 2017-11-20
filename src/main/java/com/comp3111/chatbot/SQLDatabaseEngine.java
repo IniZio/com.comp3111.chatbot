@@ -18,7 +18,11 @@ import java.net.URI;
 @Slf4j
 public class SQLDatabaseEngine {
 
-	void addFreshmen(String userId) throws Exception
+	/**
+	 * Add user as freshman in thanksgiving party
+	 * @param {String} userId
+	 */
+	public void addFreshmen(String userId) throws Exception
 	{
 		Connection connection = null;
 		PreparedStatement stmt = null;
@@ -30,7 +34,24 @@ public class SQLDatabaseEngine {
 		{
 			log.info(e.toString());
 		}
+	}
 
+	/**
+	 * Add or update user as joining thanksgiving
+	 * @param {String} userId
+	 * @param {String} food
+	 */
+	public void joinThanksgiving (String userId, String food) throws Exception {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		try {
+			connection = getConnection();
+			stmt = connection.prepareStatement(
+				"INSERT INTO thanksgiving VALUES('" + userId + "', '" + food + "', false) ON CONFLICT (userid) DO UPDATE SET food='" + food + "', accepted=true");
+			stmt.executeQuery();
+		} catch (Exception e) {
+			log.info("Exception while adding to thanksgiving: {}", e.toString());
+		}
 	}
 		
 	
