@@ -1,5 +1,6 @@
 package com.comp3111.chatbot;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -38,8 +39,18 @@ public class Notification {
     }
     Set<String> subscriberSet = new HashSet<String>(Arrays.asList(subscriberIds));
     for (String subscriber: subscriberIds) {
+      // Todos notification
       try {
-        PushMessage pushMessage = new PushMessage(subscriber, new TextMessage("A Hello from notifictions"));
+        String reply = "Below are your existing Todos:\n";
+        int index = 0;
+        try {
+          for (Todo item: db.getTodos(subscriber)) {
+              reply += "" + (++index) + ") " + item.getContent() + " by " + new SimpleDateFormat("dd/MM/yyyy").format(item.getDeadline()) + "\n";
+          }
+        }  catch(Exception e) {
+          log.info("Failed to get todos for notification : {}", e.toString());            
+        }
+        PushMessage pushMessage = new PushMessage(subscriber, new TextMessage(reply));
         lineMessagingClient.pushMessage(pushMessage);
       } catch (Exception e) {
         log.info("Failed to push message: {}", e.toString());
