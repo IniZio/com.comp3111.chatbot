@@ -1,6 +1,7 @@
 package com.comp3111.chatbot;
 
 import java.text.SimpleDateFormat;
+import java.time.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,28 +28,37 @@ import lombok.extern.slf4j.Slf4j;
 public class Notification {
   private static SQLDatabaseEngine db = new SQLDatabaseEngine();
   @Autowired
-  private LineMessagingClient lineMessagingClient ;
+  private LineMessagingClient lineMessagingClient;
+
   // Everyday 9am
-  @Scheduled(cron="0 9 0 * * ?")
+  @Scheduled(cron = "0 0 9 * * *")
   //@Scheduled(cron="*/5 * * * * *")    
-  public void refreshNotifications () {
+  public void refreshNotifications() {
+    LocalDate current = LocalDate.now(ZoneId.of("UTC+08:00"));
+    if (!((current.getYear() == 2017) && (current.getMonthValue() == 11)
+        && ((current.getDayOfMonth()) >= 20 && (current.getDayOfMonth() <= 27)))) {
+      return;
+    }
     log.info("Refreshing notifications");
     String[] subscriberIds = new String[0];
-    try { subscriberIds = db.getSubscriberIDs(); } catch (Exception e) {
-      log.info("Failed to get subscribers : {}", e.toString());      
+    try {
+      subscriberIds = db.getSubscriberIDs();
+    } catch (Exception e) {
+      log.info("Failed to get subscribers : {}", e.toString());
     }
     Set<String> subscriberSet = new HashSet<String>(Arrays.asList(subscriberIds));
-    for (String subscriber: subscriberIds) {
+    for (String subscriber : subscriberIds) {
       // Todos notification
       try {
         String reply = "Below are your existing Todos:\n";
         int index = 0;
         try {
-          for (Todo item: db.getTodos(subscriber)) {
-              reply += "" + (++index) + ") " + item.getContent() + " by " + new SimpleDateFormat("dd/MM/yyyy").format(item.getDeadline()) + "\n";
+          for (Todo item : db.getTodos(subscriber)) {
+            reply += "" + (++index) + ") " + item.getContent() + " by "
+                + new SimpleDateFormat("dd/MM/yyyy").format(item.getDeadline()) + "\n";
           }
-        }  catch(Exception e) {
-          log.info("Failed to get todos for notification : {}", e.toString());            
+        } catch (Exception e) {
+          log.info("Failed to get todos for notification : {}", e.toString());
         }
         PushMessage pushMessage = new PushMessage(subscriber, new TextMessage(reply));
         lineMessagingClient.pushMessage(pushMessage);
