@@ -91,7 +91,13 @@ public class CallbackController {
 
     @EventMapping
     public void handleFollowEvent(FollowEvent event) {
+        SQLDatabaseEngine db = new SQLDatabaseEngine();
         String replyToken = event.getReplyToken();
+        String userId = event.getSource().getUserId();
+        try { db.addSubscriber(userId); } catch (Exception e) {
+            log.info("Failed to add subscriber: {}", e.toString());
+        }
+        
         safeReply(replyToken, "Got followed event");
     }
 
@@ -448,6 +454,74 @@ public class CallbackController {
                 }
                 break;
             }
+            case ACTION.CHECK_THANKSGIVING: {
+                if (db.isRegistered(userId)){
+                    String reply ="I think you have accepted";
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                    break;
+                }
+                else {
+                    String reply = "We need party snacks. What will you bring? Please enter simple words";
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.REGISTER_THANKSGIVING);
+                    break;
+                }
+            }
+            case ACTION.REGISTER_THANKSGIVING: {
+                if (text.matches(".*\\d+.*")) {
+                    String reply = "Please do not enter any numbers";
+                    this.replyText(replyToken, reply);
+                    db.storeAction(userId, text, ACTION.CHECK_THANKSGIVING);
+                    handleNextAction(userId, replyToken, text, db);
+                    return true;
+                }
+                String reply = userId + " will bring " + text.trim();
+                this.replyText(replyToken, reply);
+                ConfirmTemplate foodConfirmTemplate = new ConfirmTemplate("Confirm?",
+                    new MessageAction("Yes", "Yes"),
+                    new MessageAction("No", "No")
+                );
+                TemplateMessage foodTemplateMessage = new TemplateMessage("Please Type in Yes or No", foodConfirmTemplate);
+                this.reply(replyToken, foodTemplateMessage);
+                db.storeAction(userId, text, ACTION.CHECK_FOOD);
+                break;
+            }
+            case ACTION.CHECK_FOOD: {
+                switch (text) {
+                    case "yes":{
+                        String reply = "Thanks, we're checking something";
+                        this.replyText(replyToken, reply);
+                        if (db.foodExist(param)){
+                            reply = "Someone is bringing that already, can you pick another one?";
+                            this.replyText(replyToken, reply);
+                            db.storeAction(userId, text, ACTION.CHECK_THANKSGIVING);
+                            handleNextAction(userId, replyToken, text, db);
+                            return true;
+                        }
+                        else {
+                            db.storeIDRecord(userId, param, "yes");
+                            reply = "Great, please prepare 5 people portion of that";
+                            this.replyText(replyToken, reply);
+                            db.storeAction(userId, text, ACTION.EXIT_MAIN);
+                        }
+                        break;
+                    }
+                    case "no":{
+                        db.storeAction(userId, text, ACTION.CHECK_THANKSGIVING);
+                        handleNextAction(userId, replyToken, text, db);
+                        return true;
+                    }
+                    default: {
+                        String reply = "Error. Please try again.";
+                        this.replyText(replyToken, reply);
+                        db.storeAction(userId, text, ACTION.CHECK_THANKSGIVING);
+                        handleNextAction(userId, replyToken, text, db);
+                        return true;
+                    }
+                }
+                break;
+            }
             case ACTION.EXIT_MAIN: {
                 // TODO: print main menu
                 break;
@@ -540,6 +614,16 @@ public class CallbackController {
 
         case "f":
             try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
+            handleNextAction(userId, replyToken, text, db);
+            break;
+        
+        case "accept":
+            try {
+                db.storeAction(userId, text, ACTION.REGISTER_THANKSGIVING);
+            }
+            catch (Exception e){
+                log.info(event.toString());
+            }
             handleNextAction(userId, replyToken, text, db);
             break;
 

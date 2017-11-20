@@ -9,6 +9,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class SQLDatabaseEngine {
@@ -144,6 +146,99 @@ public class SQLDatabaseEngine {
 			return "NOT FOUND";
 	}
 	
+	Boolean isRegistered(String id) throws Exception {
+		Boolean userReg = false;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = getConnection();
+			stmt = connection.prepareStatement("SELECT * FROM party WHERE userid ='" + id + "'");
+			rs = stmt.executeQuery();
+			String refresh = rs.getString("accepted");
+			if (refresh.equals("no")){
+				userReg = false;
+			}
+			else {
+				userReg = true;
+			}
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException: ", e2.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+		return userReg;
+	}
+
+	Boolean foodExist(String text) throws Exception {
+		Boolean foodAlreadyBrought = false;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			connection = getConnection();
+			stmt = connection.prepareStatement("SELECT refresh FROM party WHERE refresh ='" + text + "'");
+			rs = stmt.executeQuery();
+			String result = rs.getString("refresh");
+			if (result.equals(text)){
+				foodAlreadyBrought = true;
+			}
+
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException: ", e2.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+		return foodAlreadyBrought;
+	}
+
+	public void storeIDRecord(String id, String refresh, String accepted) throws Exception{
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = this.getConnection();
+			stmt = connection.prepareStatement("SELECT COUNT (userId) FROM  party WHERE userId='" + id + "'");
+			rs = stmt.executeQuery();
+			if (rs.getInt(1) != 1){
+				stmt = connection.prepareStatement("INSERT INTO party VALUES('"+ id + "'," + "'"+ refresh +"', "+ "'"+ accepted +"' )" );
+				rs = stmt.executeQuery();
+			}
+			connection.close();
+		} catch (Exception e) {
+			log.info("Exception while storing: {}", e.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			} catch (Exception e) {
+				log.info("Exception while storing: {}", e.toString());
+			}
+		}
+	}
+
 	 /**
 	  * Stores the current action and message input by the user in the database.
 	  * 
