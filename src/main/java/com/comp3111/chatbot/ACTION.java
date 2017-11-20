@@ -16,4 +16,5 @@ public interface ACTION {
     String COURSE_INPUT = "course_input";
     String COURSE_SEARCH = "course_search";
     String COURSE_PICK = "course_pick";
+    String TODO_MENU = "todo_menu";
 }

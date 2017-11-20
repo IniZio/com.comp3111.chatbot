@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -448,6 +449,16 @@ public class CallbackController {
                 }
                 break;
             }
+            case ACTION.TODO_MENU: {
+                String reply = "Below are your existing Todos:\n";
+                int index = 0;
+                for (Todo item: db.getTodos(userId)) {
+                    reply += "" + (++index) + ") " + item.getContent() + " by " + new SimpleDateFormat("dd/MM/yyyy").format(item.getDeadline()) + "\n";
+                }
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);                
+                break;
+            }
             case ACTION.EXIT_MAIN: {
                 // TODO: print main menu
                 break;
@@ -540,6 +551,11 @@ public class CallbackController {
 
         case "f":
             try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
+            handleNextAction(userId, replyToken, text, db);
+            break;
+
+        case "g":
+            try { db.storeAction(userId, text, ACTION.TODO_MENU); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
 
