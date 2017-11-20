@@ -202,6 +202,25 @@ public class CallbackTester {
         }
 
         @Test
+        public void testCourseFoundProblematicInput() throws Exception {
+
+                MessageEvent request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "a"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "COMP3111"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "sth about COMP3111"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+        }
+
+        @Test
         public void testLiftFound() throws Exception {
 
                 MessageEvent request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
@@ -376,6 +395,30 @@ public class CallbackTester {
                                 new TextMessageContent(messageId, "exit"), //messageId , message
                                 Instant.now() //timestamp
                 );
+                underTest.handleTextMessageEvent(request);
+        }
+        
+        @Test
+        public void testLink() throws Exception {
+
+                MessageEvent request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "c"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "20"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "c"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "1"), Instant.now());
+
                 underTest.handleTextMessageEvent(request);
         }
 }

@@ -65,6 +65,8 @@ import com.linecorp.bot.model.response.*;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
+import org.springframework.scheduling.annotation.Scheduled;
+
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -95,7 +97,13 @@ public class CallbackController {
 
     @EventMapping
     public void handleFollowEvent(FollowEvent event) {
+        SQLDatabaseEngine db = new SQLDatabaseEngine();
         String replyToken = event.getReplyToken();
+        String userId = event.getSource().getUserId();
+        try { db.addSubscriber(userId); } catch (Exception e) {
+            log.info("Failed to add subscriber: {}", e.toString());
+        }
+
         safeReply(replyToken, "Got followed event");
     }
 
@@ -438,6 +446,9 @@ public class CallbackController {
                     } else if (text.contains("schedule") || text.contains("time")) {
                         course_info = new CourseInfo(co_name, OPTIONS.SCHEDULE);
                     }
+                    else{
+                        course_info = new CourseInfo(co_name, OPTIONS.OVERVIEW);
+                    }
                     List<String> result = course_info.courseSearch();
                     List<Message> textMessages = new ArrayList<>();
                     for (String result_item : result) {
@@ -537,31 +548,7 @@ public class CallbackController {
         // 2. If no matching previous action, determine action type based on input
         String reply = "";
         switch (text) {
-            case "profile": {
-                //String userId = event.getSource().getUserId();
-                if (userId != null) {
-                    lineMessagingClient
-                            .getProfile(userId)
-                            .whenComplete((profile, throwable) -> {
-                                if (throwable != null) {
-                                    safeReply(replyToken, throwable.getMessage());
-                                    return;
-                                }
 
-                                this.reply(
-                                        replyToken,
-                                        Arrays.asList(new TextMessage(
-                                                                "Display name: " + profile.getDisplayName()),
-                                                        new TextMessage("Status message: "
-                                                                        + profile.getStatusMessage()))
-                                );
-
-                            });
-                } else {
-                    safeReply(replyToken, "Bot can't use profile API without user ID");
-                }
-                break;
-            }
             case "a":
                 try { db.storeAction(userId, text, ACTION.COURSE_INPUT); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);                
@@ -601,7 +588,7 @@ public class CallbackController {
             try { db.storeAction(userId, text, ACTION.TODO_INPUT); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
-
+            
         default:
             printMainMenu(replyToken);
             break;
