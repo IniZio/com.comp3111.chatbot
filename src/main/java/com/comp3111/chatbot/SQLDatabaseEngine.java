@@ -4,6 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Map;
 import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -269,6 +271,73 @@ public class SQLDatabaseEngine {
 			}
 		}
 	}		
+
+	/**
+	 * Searches all subscribers' (i.e. followers) ids in database for notifications
+	 * @return Array of subscribers id
+	 */
+	public String[] getSubscriberIDs () throws Exception {
+		String[] subscribers = new String[0];
+
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = this.getConnection();
+			stmt = connection.prepareStatement("SELECT * FROM subscribers");
+			rs = stmt.executeQuery();
+
+			ArrayList<String> subscriberList = new ArrayList<String>();
+			while (rs.next()) {
+				log.info("Query got results");
+				subscriberList.add(rs.getString(1));
+			}
+			subscribers = new String[subscriberList.size()];
+			subscribers = subscriberList.toArray(subscribers);
+			return subscribers;		
+		} catch (Exception e) {
+			log.info("Exception while querying: {}", e.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+
+		return subscribers;
+	}
+
+	/**
+	 * Add subscriber for notifications
+	 * @param {String} id of subscriber
+	 */
+	public void addSubscriber (String userId) throws Exception {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = this.getConnection();
+			stmt = connection.prepareStatement("INSERT INTO subscribers VALUES('" + userId + "')");
+			rs = stmt.executeQuery();			
+		} catch (Exception e) {
+			log.info("Exception while adding query: {}", e.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+	}
 
 	/**
 	 * Searches the latest actions of the user by User Id in the database for deciding next route or action.
