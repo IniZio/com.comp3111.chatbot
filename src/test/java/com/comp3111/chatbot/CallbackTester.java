@@ -421,4 +421,34 @@ public class CallbackTester {
 
                 underTest.handleTextMessageEvent(request);
         }
+        
+        
+        @Test
+        public void testTodo() throws Exception {
+
+                MessageEvent request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "g"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "add todo"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "Party@25-13-2017"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+                
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                        new TextMessageContent(messageId, "Party%25-11-2017"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "Party2@25-11-2017"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+        }
 }
