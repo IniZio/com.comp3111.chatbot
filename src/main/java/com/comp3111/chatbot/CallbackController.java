@@ -499,31 +499,7 @@ public class CallbackController {
         // 2. If no matching previous action, determine action type based on input
         String reply = "";
         switch (text) {
-            case "profile": {
-                //String userId = event.getSource().getUserId();
-                if (userId != null) {
-                    lineMessagingClient
-                            .getProfile(userId)
-                            .whenComplete((profile, throwable) -> {
-                                if (throwable != null) {
-                                    safeReply(replyToken, throwable.getMessage());
-                                    return;
-                                }
 
-                                this.reply(
-                                        replyToken,
-                                        Arrays.asList(new TextMessage(
-                                                                "Display name: " + profile.getDisplayName()),
-                                                        new TextMessage("Status message: "
-                                                                        + profile.getStatusMessage()))
-                                );
-
-                            });
-                } else {
-                    safeReply(replyToken, "Bot can't use profile API without user ID");
-                }
-                break;
-            }
             case "a":
                 try { db.storeAction(userId, text, ACTION.COURSE_INPUT); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);                

@@ -397,4 +397,28 @@ public class CallbackTester {
                 );
                 underTest.handleTextMessageEvent(request);
         }
+        
+        @Test
+        public void testLink() throws Exception {
+
+                MessageEvent request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "c"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "20"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "c"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "1"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+        }
 }
