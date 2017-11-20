@@ -17,6 +17,23 @@ import java.net.URI;
 
 @Slf4j
 public class SQLDatabaseEngine {
+
+	void addFreshmen(String userId) throws Exception
+	{
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		try{
+			connection =getConnection();
+			stmt = connection.prepareStatement("INSERT INTO thanksgiving VALUES ('" + userId + "', '', '', 0)");
+			stmt.executeQuery();
+		}catch(Exception e)
+		{
+			log.info(e.toString());
+		}
+
+	}
+		
+	
 	/**
 	 * Searches the opening hours of a restaurant and returns it.
 	 * 

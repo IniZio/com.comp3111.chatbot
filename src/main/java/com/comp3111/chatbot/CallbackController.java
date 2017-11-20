@@ -99,13 +99,24 @@ public class CallbackController {
     public void handleFollowEvent(FollowEvent event) {
         SQLDatabaseEngine db = new SQLDatabaseEngine();
         String replyToken = event.getReplyToken();
-        String userId = event.getSource().getUserId();
+        String userId = event.getSource().getUserId();        
+
+        // Add as thanksgiving freshman
+        safeReply(replyToken, "Added you subscriber!");                
+        try {
+            database.addFreshmen(userId);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			log.info(e.toString());
+        }
+
+        // Add to notification subscriber
         try { db.addSubscriber(userId); } catch (Exception e) {
             log.info("Failed to add subscriber: {}", e.toString());
         }
-
-        safeReply(replyToken, "Got followed event");
     }
+
+     
 
     @EventMapping
     public void handleJoinEvent(JoinEvent event) {
