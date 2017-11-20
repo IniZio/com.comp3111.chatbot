@@ -61,6 +61,8 @@ import com.linecorp.bot.model.response.*;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 
+import org.springframework.scheduling.annotation.Scheduled;
+
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -91,7 +93,13 @@ public class CallbackController {
 
     @EventMapping
     public void handleFollowEvent(FollowEvent event) {
+        SQLDatabaseEngine db = new SQLDatabaseEngine();
         String replyToken = event.getReplyToken();
+        String userId = event.getSource().getUserId();
+        try { db.addSubscriber(userId); } catch (Exception e) {
+            log.info("Failed to add subscriber: {}", e.toString());
+        }
+
         safeReply(replyToken, "Got followed event");
     }
 
@@ -542,7 +550,7 @@ public class CallbackController {
             try { db.storeAction(userId, text, ACTION.BUS_CHOOSE_BUS); } catch (Exception e) {log.info(e.toString());}
             handleNextAction(userId, replyToken, text, db);
             break;
-
+        
         default:
             printMainMenu(replyToken);
             break;
