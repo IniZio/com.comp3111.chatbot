@@ -35,8 +35,8 @@ public class Notification {
   private LineMessagingClient lineMessagingClient;
 
   // Everyday 9am
-  @Scheduled(cron = "0 0 9 * * *")
-  //@Scheduled(cron="*/5 * * * * *")    
+  //@Scheduled(cron = "0 0 9 * * *")
+  @Scheduled(cron="*/30 * * * * *")
   public void refreshNotifications() {
     LocalDate current = LocalDate.now(ZoneId.of("UTC+08:00"));
     if (!((current.getYear() == 2017) && (current.getMonthValue() == 11)
@@ -64,41 +64,41 @@ public class Notification {
         } catch (Exception e) {
           log.info("Failed to get todos for notification : {}", e.toString());
         }
-        PushMessage pushMessage = new PushMessage(subscriber, new TextMessage(reply));
+        PushMessage pushMessage = new PushMessage(subscriber.trim(), new TextMessage(reply));
         lineMessagingClient.pushMessage(pushMessage);
       } catch (Exception e) {
         log.info("Failed to push message: {}", e.toString());
       }
     }
-    ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("UTC+8"));
-    String timeToString = currentTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-    int dateToInt = Integer.parseInt(timeToString);
-    log.info("the checked date is: {}", timeToString);
-    if (dateToInt >= 20171121 && dateToInt <= 20171127) {
-      for (String subscriber : subscriberIds) {
-        try {
-          String reply = "party?";
-          if (!db.isRegistered(subscriber)) {
-            PushMessage pushMessage = new PushMessage(subscriber, new TextMessage(reply));
-            lineMessagingClient.pushMessage(pushMessage);
-          }
-        } catch (Exception e) {
-          log.info("Failed to push message: {}", e.toString());
-        }
-      }
-    }
-    if (dateToInt == 20171122){
-      for (String subscriber: subscriberIds){
-        try {
-          String reply = "party tmr!!!";
-          if (db.isRegistered(subscriber)) {
-            PushMessage pushMessage = new PushMessage(subscriber, new TextMessage(reply));
-            lineMessagingClient.pushMessage(pushMessage);
-          }
-        } catch (Exception e) {
-          log.info("Failed to push message: {}", e.toString());
-        }
-      }
-    }
+//    ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("UTC+8"));
+//    String timeToString = currentTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+//    int dateToInt = Integer.parseInt(timeToString);
+//    log.info("the checked date is: {}", timeToString);
+//    if (dateToInt >= 20171121 && dateToInt <= 20171127) {
+//      for (String subscriber : subscriberIds) {
+//        try {
+//          String reply = "party?";
+//          if (!db.isRegistered(subscriber.trim())) {
+//            PushMessage pushMessage = new PushMessage(subscriber.trim(), new TextMessage(reply));
+//            lineMessagingClient.pushMessage(pushMessage);
+//          }
+//        } catch (Exception e) {
+//          log.info("Failed to push message: {}", e.toString());
+//        }
+//      }
+//    }
+//    if (dateToInt == 20171122){
+//      for (String subscriber: subscriberIds){
+//        try {
+//          String reply = "party tmr!!!";
+//          if (db.isRegistered(subscriber.trim())) {
+//            PushMessage pushMessage = new PushMessage(subscriber.trim(), new TextMessage(reply));
+//            lineMessagingClient.pushMessage(pushMessage);
+//          }
+//        } catch (Exception e) {
+//          log.info("Failed to push message: {}", e.toString());
+//        }
+//      }
+//    }
   }
 }
