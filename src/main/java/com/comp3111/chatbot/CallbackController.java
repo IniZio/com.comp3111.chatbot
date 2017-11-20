@@ -469,8 +469,8 @@ public class CallbackController {
                     String reply = "We need party snacks. What will you bring? Please enter simple words";
                     this.replyText(replyToken, reply);
                     db.storeAction(userId, text, ACTION.REGISTER_THANKSGIVING);
-                    break;
                 }
+                break;
             }
             case ACTION.REGISTER_THANKSGIVING: {
                 if (text.matches(".*\\d+.*")) {
@@ -480,9 +480,9 @@ public class CallbackController {
                     handleNextAction(userId, replyToken, text, db);
                     return true;
                 }
-                String reply = userId + " will bring " + text.trim();
-                this.replyText(replyToken, reply);
-                ConfirmTemplate foodConfirmTemplate = new ConfirmTemplate("Confirm?",
+                // String reply = userId + " will bring " + text.trim();
+                // this.replyText(replyToken, reply);
+                ConfirmTemplate foodConfirmTemplate = new ConfirmTemplate("You will bring " + text.trim() + ". Confirm?",
                     new MessageAction("Yes", "Yes"),
                     new MessageAction("No", "No")
                 );
@@ -494,8 +494,7 @@ public class CallbackController {
             case ACTION.CHECK_FOOD: {
                 switch (text) {
                     case "yes":{
-                        String reply = "Thanks, we're checking something";
-                        this.replyText(replyToken, reply);
+                        String reply = null;
                         if (db.foodExist(param)){
                             reply = "Someone is bringing that already, can you pick another one?";
                             this.replyText(replyToken, reply);
@@ -623,7 +622,7 @@ public class CallbackController {
         
         case "accept":
             try {
-                db.storeAction(userId, text, ACTION.REGISTER_THANKSGIVING);
+                db.storeAction(userId, text, ACTION.CHECK_THANKSGIVING);
             }
             catch (Exception e){
                 log.info(event.toString());

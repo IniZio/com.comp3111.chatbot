@@ -193,17 +193,19 @@ public class SQLDatabaseEngine {
 		
 		try {
 			connection = getConnection();
-			stmt = connection.prepareStatement("SELECT food FROM thanksgiving WHERE food ='" + text + "'");
+			stmt = connection.prepareStatement("SELECT food FROM thanksgiving WHERE food='" + text + "'");
 			rs = stmt.executeQuery();
 			String result = rs.getString("food");
+			log.info("the food to be checked is {}", result);
 			if (result.equals(text)){
 				foodAlreadyBrought = true;
+				log.info("food exist and checked: {}", result);
 			}
 
 		}catch(URISyntaxException e1){
 			log.info("URISyntaxException: ", e1.toString());
 		}catch(SQLException e2) {
-			log.info("SQLException when checking food exist in table: ", e2.toString());
+			log.info("SQLException when checking food exist in table: {}", e2.toString());
 		} finally {
 			try {
 				try { rs.close(); } catch (Exception e) {}
@@ -224,18 +226,10 @@ public class SQLDatabaseEngine {
 
 		try {
 			connection = this.getConnection();
-			stmt = connection.prepareStatement("SELECT COUNT (userId) FROM  thanksgiving WHERE userId='" + id + "'");
-			rs = stmt.executeQuery();
-			if (rs.getInt(1) != 1){
-				// record not exist for new added users
-				stmt = connection.prepareStatement("INSERT INTO thanksgiving VALUES('"+ id + "'," + "'"+ food +"', "+ "'"+ accepted +"',0)" );
-				rs = stmt.executeQuery();
-				log.info("inserted new user {} to thanksgiving table", id);
-			}
-			else if (accepted.equals("yes")){
+			if (accepted.equals("yes")){
 				// join party update with food
 				stmt = connection.prepareStatement("UPDATE thanksgiving SET food='" + food + "', accepted='yes', lastDate=0 WHERE userId='" + id + "'" );
-				rs = stmt.executeQuery();
+				stmt.executeUpdate();
 				log.info("Insert food into table after accept");
 			}
 			else {
@@ -345,7 +339,7 @@ public class SQLDatabaseEngine {
 		try {
 			connection = this.getConnection();
 			stmt = connection.prepareStatement("INSERT INTO subscribers VALUES('" + userId + "')");
-			rs = stmt.executeQuery();			
+			stmt.executeQuery();		
 		} catch (Exception e) {
 			log.info("Exception while adding query: {}", e.toString());
 		} finally {

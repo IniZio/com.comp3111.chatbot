@@ -29,7 +29,7 @@ public class Notification {
   private LineMessagingClient lineMessagingClient ;
   // Everyday 9am
   @Scheduled(cron="0 9 0 * * ?")
-  // @Scheduled(cron="*/5 * * * * *")    
+  //@Scheduled(cron="*/5 * * * * *")    
   public void refreshNotifications () {
     log.info("Refreshing notifications");
     String[] subscriberIds = new String[0];
