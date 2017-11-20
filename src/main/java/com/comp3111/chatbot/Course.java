@@ -18,6 +18,9 @@ import org.json.JSONTokener;
 
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Course calss which use to find the course information corresponding to the course name
+ */
 @Slf4j
 public class Course {
     private String course_name;
