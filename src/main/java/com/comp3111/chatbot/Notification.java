@@ -70,35 +70,35 @@ public class Notification {
         log.info("Failed to push message: {}", e.toString());
       }
     }
-//    ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("UTC+8"));
-//    String timeToString = currentTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-//    int dateToInt = Integer.parseInt(timeToString);
-//    log.info("the checked date is: {}", timeToString);
-//    if (dateToInt >= 20171121 && dateToInt <= 20171127) {
-//      for (String subscriber : subscriberIds) {
-//        try {
-//          String reply = "party?";
-//          if (!db.isRegistered(subscriber.trim())) {
-//            PushMessage pushMessage = new PushMessage(subscriber.trim(), new TextMessage(reply));
-//            lineMessagingClient.pushMessage(pushMessage);
-//          }
-//        } catch (Exception e) {
-//          log.info("Failed to push message: {}", e.toString());
-//        }
-//      }
-//    }
-//    if (dateToInt == 20171122){
-//      for (String subscriber: subscriberIds){
-//        try {
-//          String reply = "party tmr!!!";
-//          if (db.isRegistered(subscriber.trim())) {
-//            PushMessage pushMessage = new PushMessage(subscriber.trim(), new TextMessage(reply));
-//            lineMessagingClient.pushMessage(pushMessage);
-//          }
-//        } catch (Exception e) {
-//          log.info("Failed to push message: {}", e.toString());
-//        }
-//      }
-//    }
+    ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("UTC+8"));
+    String timeToString = currentTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    int dateToInt = Integer.parseInt(timeToString);
+    log.info("the checked date is: {}", dateToInt);
+    if (dateToInt >= 20171121 && dateToInt <= 20171127) {
+      for (String subscriber : subscriberIds) {
+        try {
+          String reply = "party?";
+          if (!db.isRegistered(subscriber.trim())) {
+            PushMessage pushMessage = new PushMessage(subscriber.trim(), new TextMessage(reply));
+            lineMessagingClient.pushMessage(pushMessage);
+          }
+        } catch (Exception e) {
+          log.info("Failed to push message: {}", e.toString());
+        }
+      }
+    }
+    if (dateToInt == 20171122){
+      for (String subscriber: subscriberIds){
+        try {
+          String reply = "party tmr!!!";
+          if (db.isRegistered(subscriber.trim())) {
+            PushMessage pushMessage = new PushMessage(subscriber.trim(), new TextMessage(reply));
+            lineMessagingClient.pushMessage(pushMessage);
+          }
+        } catch (Exception e) {
+          log.info("Failed to push message: {}", e.toString());
+        }
+      }
+    }
   }
 }
