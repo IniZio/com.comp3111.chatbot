@@ -99,8 +99,9 @@ public class CallbackController {
         try { db.addSubscriber(userId); } catch (Exception e) {
             log.info("Failed to add subscriber: {}", e.toString());
         }
-        
-
+        try { db.storeIDRecord(userId, "nothing", "no");} catch (Exception e) {
+            log.info("Failed to add user to thanksgiving table: {}", e.toString());
+        }
         safeReply(replyToken, "Got followed event");
     }
 

@@ -156,10 +156,10 @@ public class SQLDatabaseEngine {
 
 		try {
 			connection = getConnection();
-			stmt = connection.prepareStatement("SELECT * FROM party WHERE userid ='" + id + "'");
+			stmt = connection.prepareStatement("SELECT * FROM thanksgiving WHERE userid ='" + id + "'");
 			rs = stmt.executeQuery();
-			String refresh = rs.getString("accepted");
-			if (refresh.equals("no")){
+			String accepted = rs.getString("accepted");
+			if (accepted.equals("no")){
 				userReg = false;
 			}
 			else {
@@ -168,7 +168,7 @@ public class SQLDatabaseEngine {
 		}catch(URISyntaxException e1){
 			log.info("URISyntaxException: ", e1.toString());
 		}catch(SQLException e2) {
-			log.info("SQLException: ", e2.toString());
+			log.info("SQLException when checking thanksgiving register: ", e2.toString());
 		} finally {
 			try {
 				try { rs.close(); } catch (Exception e) {}
@@ -190,9 +190,9 @@ public class SQLDatabaseEngine {
 		
 		try {
 			connection = getConnection();
-			stmt = connection.prepareStatement("SELECT refresh FROM party WHERE refresh ='" + text + "'");
+			stmt = connection.prepareStatement("SELECT food FROM thanksgiving WHERE food ='" + text + "'");
 			rs = stmt.executeQuery();
-			String result = rs.getString("refresh");
+			String result = rs.getString("food");
 			if (result.equals(text)){
 				foodAlreadyBrought = true;
 			}
@@ -200,7 +200,7 @@ public class SQLDatabaseEngine {
 		}catch(URISyntaxException e1){
 			log.info("URISyntaxException: ", e1.toString());
 		}catch(SQLException e2) {
-			log.info("SQLException: ", e2.toString());
+			log.info("SQLException when checking food exist in table: ", e2.toString());
 		} finally {
 			try {
 				try { rs.close(); } catch (Exception e) {}
@@ -214,22 +214,40 @@ public class SQLDatabaseEngine {
 		return foodAlreadyBrought;
 	}
 
-	public void storeIDRecord(String id, String refresh, String accepted) throws Exception{
+	public void storeIDRecord(String id, String food, String accepted) throws Exception{
 		Connection connection = null;
 		PreparedStatement stmt = null;
 		ResultSet rs = null;
 
 		try {
 			connection = this.getConnection();
-			stmt = connection.prepareStatement("SELECT COUNT (userId) FROM  party WHERE userId='" + id + "'");
+			stmt = connection.prepareStatement("SELECT COUNT (userId) FROM  thanksgiving WHERE userId='" + id + "'");
 			rs = stmt.executeQuery();
 			if (rs.getInt(1) != 1){
-				stmt = connection.prepareStatement("INSERT INTO party VALUES('"+ id + "'," + "'"+ refresh +"', "+ "'"+ accepted +"' )" );
+				// record not exist for new added users
+				stmt = connection.prepareStatement("INSERT INTO thanksgiving VALUES('"+ id + "'," + "'"+ food +"', "+ "'"+ accepted +"',0)" );
 				rs = stmt.executeQuery();
+				log.info("inserted new user {} to thanksgiving table", id);
+			}
+			else if (accepted.equals("yes")){
+				// join party update with food
+				stmt = connection.prepareStatement("UPDATE thanksgiving SET food='" + food + "', accepted='yes', lastDate=0 WHERE userId='" + id + "'" );
+				rs = stmt.executeQuery();
+				log.info("Insert food into table after accept");
+			}
+			else {
+				// latest push date
+				ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("UTC+8"));
+				String latestDate = currentTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+				int latestDateInt = Integer.parseInt(latestDate);
+				stmt = connection.prepareStatement("UPDATE thanksgiving SET food='nothing', accepted='no', lastDate=? WHERE userId='" + id + "'" );
+				stmt.setInt(1, latestDateInt);
+				stmt.executeUpdate();
+				log.info("Refresh push date");
 			}
 			connection.close();
 		} catch (Exception e) {
-			log.info("Exception while storing: {}", e.toString());
+			log.info("Exception while storing and refreshing thanksgiving table: {}", e.toString());
 		} finally {
 			try {
 				try { rs.close(); } catch (Exception e) {}
