@@ -11,6 +11,10 @@ import java.io.InputStreamReader;
 import java.net.URI;
 
 @Slf4j
+
+/**
+ * Used to get information from database
+ */
 public class SQLDatabaseEngine {
 	/**
 	 * Searches the opening hours of a restaurant and returns it.
