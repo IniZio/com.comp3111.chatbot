@@ -550,13 +550,15 @@ public class CallbackController {
                 for (Todo item: db.getTodos(userId)) {
                     reply += "" + (++index) + ") " + item.getContent() + " by " + new SimpleDateFormat("dd/MM/yyyy").format(item.getDeadline()) + "\n";
                 }
-                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Todo",
-                    reply,
-                    Arrays.asList(new MessageAction("Add Todo", ACTION.TODO_INPUT),
-                            new MessageAction("Return to main menu", "exit")));
-                TemplateMessage templateMessage = new TemplateMessage("--------- Todo list ---------\n" + reply, buttonsTemplate);
+
+                reply += "\nType 'add todo' to add a new todo item";
+                // ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Todo",
+                //     reply,
+                //     Arrays.asList(new MessageAction("Add Todo", ACTION.TODO_INPUT),
+                //             new MessageAction("Return to main menu", "exit")));
+                // TemplateMessage templateMessage = new TemplateMessage("--------- Todo list ---------\n" + reply, buttonsTemplate);
                 db.storeAction(userId, text, ACTION.EXIT_MAIN);                
-                this.reply(replyToken, templateMessage);
+                safeReply(replyToken, reply);
                 break;
             }
             case ACTION.TODO_INPUT: {
