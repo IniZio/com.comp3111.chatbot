@@ -17,4 +17,6 @@ public interface ACTION {
     String COURSE_SEARCH = "course_search";
     String COURSE_PICK = "course_pick";
     String TODO_MENU = "todo_menu";
+    String TODO_INPUT = "add todo";
+    String TODO_SAVE = "todo_save";
 }

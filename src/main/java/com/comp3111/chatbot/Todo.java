@@ -3,7 +3,7 @@ package com.comp3111.chatbot;
 import java.sql.Timestamp;
 
 class Todo {
-  private Integer key;
+  private Integer key = -1;
   private Timestamp deadline;
   private String content;
   private String userId;
@@ -20,6 +20,18 @@ class Todo {
     this.content = content;
     this.userId = userId;
     this.key = key;
+  }
+
+  /**
+   * Contstructor with full properties
+   * @param Timestamp deadline
+   * @param String content
+   * @param String userId
+   */
+  public Todo (Timestamp deadline, String content, String userId) {
+    this.deadline = deadline;
+    this.content = content;
+    this.userId = userId;
   }
 
   /**

@@ -272,6 +272,29 @@ public class SQLDatabaseEngine {
 		return todos;
 	}
 
+	public void addTodo (Todo todo) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = this.getConnection();
+			stmt = connection.prepareStatement("INSERT INTO todos VALUES('" + todo.getDeadline() + "', '" + todo.getContent() + "', '" + todo.getUserId() + "')");
+			rs = stmt.executeQuery();
+		} catch (Exception e) {
+			log.info("Exception while querying todos: {}", e.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+	}
+
 	private Connection getConnection() throws URISyntaxException, SQLException {
 		Connection connection;
 		URI dbUri = new URI(System.getenv("DATABASE_URL"));
