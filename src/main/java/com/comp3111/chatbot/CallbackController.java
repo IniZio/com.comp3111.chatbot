@@ -442,6 +442,9 @@ public class CallbackController {
                     } else if (text.contains("schedule") || text.contains("time")) {
                         course_info = new CourseInfo(co_name, OPTIONS.SCHEDULE);
                     }
+                    else{
+                        course_info = new CourseInfo(co_name, OPTIONS.OVERVIEW);
+                    }
                     List<String> result = course_info.courseSearch();
                     List<Message> textMessages = new ArrayList<>();
                     for (String result_item : result) {

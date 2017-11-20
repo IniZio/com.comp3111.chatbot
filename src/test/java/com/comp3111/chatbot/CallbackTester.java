@@ -202,6 +202,25 @@ public class CallbackTester {
         }
 
         @Test
+        public void testCourseFoundProblematicInput() throws Exception {
+
+                MessageEvent request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "a"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "COMP3111"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+
+                request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
+                                new TextMessageContent(messageId, "sth about COMP3111"), Instant.now());
+
+                underTest.handleTextMessageEvent(request);
+        }
+
+        @Test
         public void testLiftFound() throws Exception {
 
                 MessageEvent request = new MessageEvent<TextMessageContent>(token, new UserSource(userId),
