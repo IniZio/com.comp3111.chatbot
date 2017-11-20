@@ -14,6 +14,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 public class SQLDatabaseEngine {
@@ -166,6 +171,120 @@ public class SQLDatabaseEngine {
 			return "NOT FOUND";
 	}
 	
+	Boolean isRegistered(String id) throws Exception {
+		Boolean userReg = false;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = getConnection();
+			stmt = connection.prepareStatement("SELECT accepted FROM thanksgiving WHERE userid ='" + id + "'");
+			rs = stmt.executeQuery();
+			String accepted = "no";
+			while (rs.next()){
+				accepted = rs.getString(1);
+			}			
+			log.info("accept flag is: {}", accepted);
+			if (accepted.equals("no")){
+				userReg = false;
+				return userReg;
+			}
+			else {
+				userReg = true;
+				return userReg;
+			}
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException when checking thanksgiving register: ", e2.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+			return userReg;
+		}
+	}
+
+	Boolean foodExist(String text) throws Exception {
+		Boolean foodAlreadyBrought = false;
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+		
+		try {
+			connection = getConnection();
+			stmt = connection.prepareStatement("SELECT food FROM thanksgiving WHERE food='" + text + "'");
+			rs = stmt.executeQuery();
+			String result = null;
+			while (rs.next()){
+				result = rs.getString(1);
+			}			
+			log.info("the food to be checked is {}", result);
+			if (result.equals(text)){
+				foodAlreadyBrought = true;
+				log.info("food exist and checked: {}", result);
+			}
+			return foodAlreadyBrought;
+		}catch(URISyntaxException e1){
+			log.info("URISyntaxException: ", e1.toString());
+		}catch(SQLException e2) {
+			log.info("SQLException when checking food exist in table: {}", e2.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+			return foodAlreadyBrought;
+		}
+	}
+
+	public void storeIDRecord(String id, String food, String accepted) throws Exception{
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = this.getConnection();
+			if (accepted.equals("yes")){
+				// join party update with food
+				stmt = connection.prepareStatement("UPDATE thanksgiving SET food='" + food + "', accepted='yes', lastDate=0 WHERE userId='" + id + "'" );
+				stmt.executeUpdate();
+				log.info("Insert food into table after accept");
+			}
+			else {
+				// latest push date
+				ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("UTC+8"));
+				String latestDate = currentTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+				int latestDateInt = Integer.parseInt(latestDate);
+				stmt = connection.prepareStatement("UPDATE thanksgiving SET food='nothing', accepted='no', lastDate=? WHERE userId='" + id + "'" );
+				stmt.setInt(1, latestDateInt);
+				stmt.executeUpdate();
+				log.info("Refresh push date");
+			}
+			connection.close();
+		} catch (Exception e) {
+			log.info("Exception while storing and refreshing thanksgiving table: {}", e.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			} catch (Exception e) {
+				log.info("Exception while storing: {}", e.toString());
+			}
+		}
+	}
+
 	 /**
 	  * Stores the current action and message input by the user in the database.
 	  * 
@@ -249,7 +368,7 @@ public class SQLDatabaseEngine {
 		try {
 			connection = this.getConnection();
 			stmt = connection.prepareStatement("INSERT INTO subscribers VALUES('" + userId + "')");
-			rs = stmt.executeQuery();			
+			stmt.executeQuery();		
 		} catch (Exception e) {
 			log.info("Exception while adding query: {}", e.toString());
 		} finally {
