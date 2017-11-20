@@ -6,6 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -29,7 +33,7 @@ public class Notification {
   @Autowired
   private LineMessagingClient lineMessagingClient ;
   // Everyday 9am
-  @Scheduled(cron="0 9 0 * * ?")
+  @Scheduled(cron="*/15 * * * * *")
   //@Scheduled(cron="*/5 * * * * *")    
   public void refreshNotifications () {
     log.info("Refreshing notifications");
@@ -54,6 +58,36 @@ public class Notification {
         lineMessagingClient.pushMessage(pushMessage);
       } catch (Exception e) {
         log.info("Failed to push message: {}", e.toString());
+      }
+    }
+    ZonedDateTime currentTime = ZonedDateTime.now(ZoneId.of("UTC+8"));
+    String timeToString = currentTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+    int dateToInt = Integer.parseInt(timeToString);
+    log.info("the checked date is: {}", timeToString);
+    if (dateToInt >= 20171121 && dateToInt <= 20171127) {
+      for (String subscriber : subscriberIds) {
+        try {
+          String reply = "party?";
+          if (!db.isRegistered(subscriber)) {
+            PushMessage pushMessage = new PushMessage(subscriber, new TextMessage(reply));
+            lineMessagingClient.pushMessage(pushMessage);
+          }
+        } catch (Exception e) {
+          log.info("Failed to push message: {}", e.toString());
+        }
+      }
+    }
+    if (dateToInt == 20171122){
+      for (String subscriber: subscriberIds){
+        try {
+          String reply = "party tmr!!!";
+          if (db.isRegistered(subscriber)) {
+            PushMessage pushMessage = new PushMessage(subscriber, new TextMessage(reply));
+            lineMessagingClient.pushMessage(pushMessage);
+          }
+        } catch (Exception e) {
+          log.info("Failed to push message: {}", e.toString());
+        }
       }
     }
   }
