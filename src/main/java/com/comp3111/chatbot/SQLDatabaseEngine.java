@@ -3,6 +3,9 @@ package com.comp3111.chatbot;
 import lombok.extern.slf4j.Slf4j;
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
+
+import org.springframework.boot.logging.log4j2.ExtendedWhitespaceThrowablePatternConverter;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Map;
@@ -297,7 +300,69 @@ public class SQLDatabaseEngine {
 		return next;
 	}
 	
-	
+	/**
+	 * Get todos not due by userid
+	 * @param {String} userId
+	 * @return {Array.<Todo>} todos
+	 */
+	public Todo[] getTodos (String userId) throws Exception {
+		Todo[] todos = new Todo[0];
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = this.getConnection();
+			stmt = connection.prepareStatement("SELECT * FROM todos where userid = '" + userId + "' AND deadline >= now()");
+
+			rs = stmt.executeQuery();			
+			
+			ArrayList<Todo> todoList = new ArrayList<Todo>();
+			while (rs.next()) {
+				log.info("Query got results");
+				todoList.add(new Todo(rs.getTimestamp("deadline"), rs.getString("content"), rs.getString("userid"), rs.getInt("key")));
+			}
+			todos = new Todo[todoList.size()];
+			todos = todoList.toArray(todos);
+		} catch (Exception e) {
+			log.info("Exception while querying todos: {}", e.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+
+		return todos;
+	}
+
+	public void addTodo (Todo todo) {
+		Connection connection = null;
+		PreparedStatement stmt = null;
+		ResultSet rs = null;
+
+		try {
+			connection = this.getConnection();
+			stmt = connection.prepareStatement("INSERT INTO todos VALUES('" + todo.getDeadline() + "', '" + todo.getContent() + "', '" + todo.getUserId() + "')");
+			rs = stmt.executeQuery();
+		} catch (Exception e) {
+			log.info("Exception while querying todos: {}", e.toString());
+		} finally {
+			try {
+				try { rs.close(); } catch (Exception e) {}
+				try { stmt.close(); }  catch (Exception e) {}
+				try { connection.close(); } catch (Exception e) {}
+			}
+			catch (Exception e) {
+				log.info("Exception while disconnection: {}", e.toString());
+			}
+		}
+	}
+
 	private Connection getConnection() throws URISyntaxException, SQLException {
 		Connection connection;
 		URI dbUri = new URI(System.getenv("DATABASE_URL"));
