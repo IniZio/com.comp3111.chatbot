@@ -11,6 +11,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+/**
+ * CourseInfo class to print out the course information
+ */
+
 public class CourseInfo {
 	private static String ERROR_NOT_FOUND_COURSE = "ERROR: Course not found.";
 	private static String ERROR_NOT_FOUND_OPTION = "ERROR: no such option.";
