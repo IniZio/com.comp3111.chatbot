@@ -35,8 +35,8 @@ public class Notification {
   private LineMessagingClient lineMessagingClient;
 
   // Everyday 9am
-  //@Scheduled(cron = "0 0 9 * * *")
-  @Scheduled(cron="*/30 * * * * *")
+  @Scheduled(cron = "0 0 9 * * *")
+  //@Scheduled(cron="*/30 * * * * *")
   public void refreshNotifications() {
     LocalDate current = LocalDate.now(ZoneId.of("UTC+08:00"));
     if (!((current.getYear() == 2017) && (current.getMonthValue() == 11)
