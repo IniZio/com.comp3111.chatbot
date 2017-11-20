@@ -19,4 +19,7 @@ public interface ACTION {
     String CHECK_THANKSGIVING = "check_thanksgiving";
     String REGISTER_THANKSGIVING = "register_thanksgiving";
     String CHECK_FOOD = "check_food";
+    String TODO_MENU = "todo_menu";
+    String TODO_INPUT = "add todo";
+    String TODO_SAVE = "todo_save";
 }

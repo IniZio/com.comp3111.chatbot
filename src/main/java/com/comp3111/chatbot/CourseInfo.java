@@ -12,8 +12,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 public class CourseInfo {
-	private static String ERROR_NOT_FOUND_COURSE = "";
-	private static String ERROR_NOT_FOUND_OPTION = "ERROR: no such option";
+	private static String ERROR_NOT_FOUND_COURSE = "ERROR: Course not found.";
+	private static String ERROR_NOT_FOUND_OPTION = "ERROR: no such option.";
 	private static int MAX_CHAR = 300;
 
 	private String input;

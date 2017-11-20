@@ -5,10 +5,14 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
@@ -95,7 +99,18 @@ public class CallbackController {
     public void handleFollowEvent(FollowEvent event) {
         SQLDatabaseEngine db = new SQLDatabaseEngine();
         String replyToken = event.getReplyToken();
-        String userId = event.getSource().getUserId();
+        String userId = event.getSource().getUserId();        
+
+        // Add as thanksgiving freshman
+        safeReply(replyToken, "Added you subscriber!");                
+        try {
+            database.addFreshmen(userId);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			log.info(e.toString());
+        }
+
+        // Add to notification subscriber
         try { db.addSubscriber(userId); } catch (Exception e) {
             log.info("Failed to add subscriber: {}", e.toString());
         }
@@ -104,6 +119,8 @@ public class CallbackController {
         }
         safeReply(replyToken, "Got followed event");
     }
+
+     
 
     @EventMapping
     public void handleJoinEvent(JoinEvent event) {
@@ -444,6 +461,9 @@ public class CallbackController {
                     } else if (text.contains("schedule") || text.contains("time")) {
                         course_info = new CourseInfo(co_name, OPTIONS.SCHEDULE);
                     }
+                    else{
+                        course_info = new CourseInfo(co_name, OPTIONS.OVERVIEW);
+                    }
                     List<String> result = course_info.courseSearch();
                     List<Message> textMessages = new ArrayList<>();
                     for (String result_item : result) {
@@ -523,6 +543,50 @@ public class CallbackController {
                         return true;
                     }
                 }
+            }
+            case ACTION.TODO_MENU: {
+                String reply = "Below are your existing Todos:\n";
+                int index = 0;
+                for (Todo item: db.getTodos(userId)) {
+                    reply += "" + (++index) + ") " + item.getContent() + " by " + new SimpleDateFormat("dd/MM/yyyy").format(item.getDeadline()) + "\n";
+                }
+                ButtonsTemplate buttonsTemplate = new ButtonsTemplate(null, "Todo",
+                    reply,
+                    Arrays.asList(new MessageAction("Add Todo", ACTION.TODO_INPUT),
+                            new MessageAction("Return to main menu", "exit")));
+                TemplateMessage templateMessage = new TemplateMessage("--------- Todo list ---------\n" + reply, buttonsTemplate);
+                db.storeAction(userId, text, ACTION.EXIT_MAIN);                
+                this.reply(replyToken, templateMessage);
+                break;
+            }
+            case ACTION.TODO_INPUT: {
+                String reply = "Please enter the new todo in format:\n <TODO content>@<DD-MM-YYYY>";
+                safeReply(replyToken, reply);
+                db.storeAction(userId, text, ACTION.TODO_SAVE);
+                break;
+            }
+            case ACTION.TODO_SAVE: {
+                try {
+                    String[] parts = text.split("@");
+                    String content = parts[0];
+                    DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
+                    Date date = new Date();
+                    try {
+                        date = formatter.parse(parts[1] + " 23:59:59");            
+                    } catch (Exception e) {
+                        safeReply(replyToken, "Invalid Date, please input again");
+                        break;
+                    }
+                    Timestamp deadline = new Timestamp(date.getTime());
+                    db.addTodo(new Todo(deadline, content, userId));
+                    db.storeAction(userId, text, ACTION.TODO_MENU);                
+                    String reply = "Todo added!";
+                    safeReply(replyToken, reply);
+                    handleNextAction(userId, replyToken, text, db);
+                } catch (Exception e) {
+                    safeReply(replyToken, "Invalid Todo format, please input again");
+                    break;
+                }
                 break;
             }
             case ACTION.EXIT_MAIN: {
@@ -565,31 +629,7 @@ public class CallbackController {
         // 2. If no matching previous action, determine action type based on input
         String reply = "";
         switch (text) {
-            case "profile": {
-                //String userId = event.getSource().getUserId();
-                if (userId != null) {
-                    lineMessagingClient
-                            .getProfile(userId)
-                            .whenComplete((profile, throwable) -> {
-                                if (throwable != null) {
-                                    safeReply(replyToken, throwable.getMessage());
-                                    return;
-                                }
 
-                                this.reply(
-                                        replyToken,
-                                        Arrays.asList(new TextMessage(
-                                                                "Display name: " + profile.getDisplayName()),
-                                                        new TextMessage("Status message: "
-                                                                        + profile.getStatusMessage()))
-                                );
-
-                            });
-                } else {
-                    safeReply(replyToken, "Bot can't use profile API without user ID");
-                }
-                break;
-            }
             case "a":
                 try { db.storeAction(userId, text, ACTION.COURSE_INPUT); } catch (Exception e) {log.info(e.toString());}
                 handleNextAction(userId, replyToken, text, db);                
@@ -630,6 +670,16 @@ public class CallbackController {
             handleNextAction(userId, replyToken, text, db);
             break;
 
+        case "g":
+            try { db.storeAction(userId, text, ACTION.TODO_MENU); } catch (Exception e) {log.info(e.toString());}
+            handleNextAction(userId, replyToken, text, db);
+            break;
+
+        case ACTION.TODO_INPUT:
+            try { db.storeAction(userId, text, ACTION.TODO_INPUT); } catch (Exception e) {log.info(e.toString());}
+            handleNextAction(userId, replyToken, text, db);
+            break;
+            
         default:
             printMainMenu(replyToken);
             break;
