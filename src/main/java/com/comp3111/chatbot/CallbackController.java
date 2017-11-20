@@ -144,6 +144,10 @@ public class CallbackController {
         this.reply(replyToken, new TextMessage(message));
     }
 
+/**
+ * print out out the main menu
+ * @param replyToken the token needed to verify the user
+ */
     private void printMainMenu (String replyToken) {
         String default_reply ="Which information do you want to know?\n"
         +"a) Course information (WIP)\n"
@@ -160,7 +164,14 @@ public class CallbackController {
                 default_reply
         );
     }
-
+/**
+ * handle the next action accorting to the user input stored in the database
+ * @param userId the user ID
+ * @param replyTocken the token needed to verify the user
+ * @param text the user input
+ * @param db the database object
+ * @return if the action handle successfully, then return true, else return false
+ */
     private Boolean handleNextAction(String userId, String replyToken, String text, SQLDatabaseEngine db)
             throws Exception {
         // SQLDatabaseEngine db = new SQLDatabaseEngine();        
@@ -462,12 +473,25 @@ public class CallbackController {
         return true;
     }
 
+    /**
+     * check the validity of the reply token
+     * @param replyTocken the token needed to verify the user
+     * @param reply the reply message
+     */
+
 	private void safeReply(String replyToken, String reply) {
 		if (replyToken.equals("ffffWiB7yP5Zw52FIkcQobQuGDXCTA"))
 			return;
 		this.replyText(replyToken, reply);
 	}
 
+
+    /**
+     * change the user input to lowercase and handle it according to input message
+     * @param replyTocken the token needed to verify the user
+     * @param event the event that triggered
+     * @param content the text message content
+     */
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
     	
@@ -549,9 +573,15 @@ public class CallbackController {
         }
     }
 
+    /**
+     * crete the server uri
+     * @param path the uri path
+     */
     private static String createUri(String path) {
         return ServletUriComponentsBuilder.fromCurrentContextPath().path(path).build().toUriString();
     }
+
+
 
     private void system(String... args) {
         ProcessBuilder processBuilder = new ProcessBuilder(args);
@@ -593,11 +623,17 @@ public class CallbackController {
         String uri;
     }
 
+    /**
+     * the constructor which create the databse
+     */
 	public CallbackController() {
 		database = new SQLDatabaseEngine();
 
-	}
-
+    }
+    
+    /**
+     * @param database the private SQLDatabaseEnginedatabase member
+     */
 	private SQLDatabaseEngine database;
 
 }
