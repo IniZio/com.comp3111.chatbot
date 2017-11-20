@@ -227,6 +227,11 @@ public class SQLDatabaseEngine {
 		
 		return next;
 	}
+
+	/**
+	 * set up connection to the database
+	 * @return a connection object that connect to the database with DATABASE_URL
+	 */
 	
 	
 	private Connection getConnection() throws URISyntaxException, SQLException {
