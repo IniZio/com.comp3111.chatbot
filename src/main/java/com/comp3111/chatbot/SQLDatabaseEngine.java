@@ -179,14 +179,20 @@ public class SQLDatabaseEngine {
 
 		try {
 			connection = getConnection();
-			stmt = connection.prepareStatement("SELECT * FROM thanksgiving WHERE userid ='" + id + "'");
+			stmt = connection.prepareStatement("SELECT accepted FROM thanksgiving WHERE userid ='" + id + "'");
 			rs = stmt.executeQuery();
-			String accepted = rs.getString("accepted");
+			String accepted = "no";
+			while (rs.next()){
+				accepted = rs.getString(1);
+			}			
+			log.info("accept flag is: {}", accepted);
 			if (accepted.equals("no")){
 				userReg = false;
+				return userReg;
 			}
 			else {
 				userReg = true;
+				return userReg;
 			}
 		}catch(URISyntaxException e1){
 			log.info("URISyntaxException: ", e1.toString());
@@ -201,8 +207,8 @@ public class SQLDatabaseEngine {
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());
 			}
+			return userReg;
 		}
-		return userReg;
 	}
 
 	Boolean foodExist(String text) throws Exception {
@@ -215,13 +221,16 @@ public class SQLDatabaseEngine {
 			connection = getConnection();
 			stmt = connection.prepareStatement("SELECT food FROM thanksgiving WHERE food='" + text + "'");
 			rs = stmt.executeQuery();
-			String result = rs.getString("food");
+			String result = null;
+			while (rs.next()){
+				result = rs.getString(1);
+			}			
 			log.info("the food to be checked is {}", result);
 			if (result.equals(text)){
 				foodAlreadyBrought = true;
 				log.info("food exist and checked: {}", result);
 			}
-
+			return foodAlreadyBrought;
 		}catch(URISyntaxException e1){
 			log.info("URISyntaxException: ", e1.toString());
 		}catch(SQLException e2) {
@@ -235,8 +244,8 @@ public class SQLDatabaseEngine {
 			catch (Exception e) {
 				log.info("Exception while disconnection: {}", e.toString());
 			}
+			return foodAlreadyBrought;
 		}
-		return foodAlreadyBrought;
 	}
 
 	public void storeIDRecord(String id, String food, String accepted) throws Exception{
