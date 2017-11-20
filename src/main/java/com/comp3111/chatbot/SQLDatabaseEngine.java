@@ -21,6 +21,10 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Slf4j
+
+/**
+ * Used to get information from database
+ */
 public class SQLDatabaseEngine {
 
 	void addFreshmen(String userId) throws Exception
@@ -435,6 +439,11 @@ public class SQLDatabaseEngine {
 		
 		return next;
 	}
+
+	/**
+	 * set up connection to the database
+	 * @return a connection object that connect to the database with DATABASE_URL
+	 */
 	
 	/**
 	 * Get todos not due by userid
